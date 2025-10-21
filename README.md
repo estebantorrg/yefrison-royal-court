@@ -9,7 +9,7 @@ An interactive web application built to showcase the full software development l
 *   A fully styled and responsive static website featuring the biography and gallery of Sir Yuleinis.
 *   Clean, stable, and professionally deployed code.
 
-## The Development Journey: A Case Study in Resilience
+## The Development Journey
 This project was a masterclass in the real-world software lifecycle.
 
 1.  **Initial Vision:** To build a complex site with a live AI chatbot.
