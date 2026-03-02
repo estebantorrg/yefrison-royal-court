@@ -3,7 +3,7 @@
 An interactive web application built to showcase the full software development lifecycle, from concept to a live, deployed product.
 
 **➡️ LIVE DEMO 🚀**
-**[https://yefris-website.netlify.app](https://yefris-website.netlify.app)**
+**[https://yefris.netlify.app/](https://yefris.netlify.app/)**
 
 ## Main Features
 *   A fully styled and responsive static website featuring the biography and gallery of Sir Yuleinis.
