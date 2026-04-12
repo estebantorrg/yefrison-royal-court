@@ -17,6 +17,6 @@ export const askYefris = async (question: string): Promise<string> => {
     return data.answer || "yefris remains silent. silence is oblivious joy.";
   } catch (error: any) {
     console.error("Error asking Yefris:", error);
-    throw new Error(error?.message || "the connection is severed. yefris cannot be reached at this time.");
+    throw new Error(error?.message || "yefris went for a walk. he cannot be reached at this time.");
   }
 };

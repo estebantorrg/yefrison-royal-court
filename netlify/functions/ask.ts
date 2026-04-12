@@ -41,7 +41,7 @@ export const handler = async (event: any) => {
     if (status === 429 || msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate')) {
       return {
         statusCode: 429,
-        body: JSON.stringify({ error: "yefris has spoken too much today. the daily limit has been reached. try again tomorrow." }),
+        body: JSON.stringify({ error: "yefris went to take a break. come back later." }),
       };
     }
 

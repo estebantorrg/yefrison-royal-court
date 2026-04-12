@@ -27,3 +27,12 @@ This project was a masterclass in the real-world software lifecycle.
 
 ## Key Takeaway
 The most important lesson from this project was not technical, but strategic: **a simple, stable, and SHIPPED product is infinitely more valuable than a complex but broken one.** This experience taught me the importance of deployment pipelines, risk management (rollbacks), and the resilience required to see a project through to production.
+
+## Error Messages
+
+| Message | Meaning |
+|---|---|
+| *"yefris went to take a break. come back later."* | The free-tier API daily limit has been reached. Try again the next day. |
+| *"yefris cannot authenticate. the API key may be invalid or missing."* | The Gemini API key is either missing from the environment variables or has been revoked/expired. |
+| *"something went wrong on yefris' end. try again in a moment."* | An unexpected server error occurred. Could be a temporary Gemini API outage or a code issue. |
+| *"yefris went for a walk. he cannot be reached at this time."* | The frontend could not reach the serverless function at all (network issue or the function isn't deployed). |
