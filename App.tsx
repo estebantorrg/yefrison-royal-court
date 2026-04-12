@@ -110,8 +110,8 @@ const App = () => {
       <AskYefris />
 
       <footer className="bg-transparent text-white/50 text-center p-8 mt-12 pb-24 relative z-10 border-t border-white/10">
-        <p className="text-xl display-font uppercase tracking-widest">&copy; {new Date().getFullYear()} The Void. Yefris loves you.</p>
-        <p className="text-sm mt-4 italic">Obey the flesh. Trust the soul. Stay oblivious.</p>
+        <p className="text-xl display-font uppercase tracking-widest">&copy; {new Date().getFullYear()} Yefris loves you.</p>
+        <p className="text-sm mt-4 italic">Be like yefris. Trust el homun. Stay oblivious.</p>
       </footer>
     </div>
   );

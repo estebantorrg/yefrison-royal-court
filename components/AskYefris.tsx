@@ -19,7 +19,7 @@ export const AskYefris: React.FC = () => {
       const response = await askYefris(question);
       setAnswer(response);
     } catch (err: any) {
-      setError(err.message || 'The connection to the flesh failed.');
+      setError(err.message || 'The connection to yefris failed.');
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export const AskYefris: React.FC = () => {
     <section id="ask-yefris" className="py-20 px-4 bg-transparent text-white flex flex-col items-center relative z-10 text-shadow-md">
       <div className="max-w-3xl w-full bg-black/60 backdrop-blur-md text-[#F8F9FA] p-8 rounded-lg shadow-[0_0_50px_rgba(255,237,74,0.15)] border border-white/20">
         <h2 className="text-4xl font-bold text-center mb-6 display-font text-[#F1C40F] drop-shadow-lg">Seek the Light of Yefris</h2>
-        <p className="text-center text-lg mb-8 italic">Submit your worldly questions to the flesh. Embrace the obliviousness.</p>
+        <p className="text-center text-lg mb-8 italic">Submit your worldly questions to yefris. Embrace the obliviousness.</p>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
