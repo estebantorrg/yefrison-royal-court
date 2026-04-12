@@ -20,7 +20,7 @@ export const handler = async (event: any) => {
 
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || '');
     const model = genAI.getGenerativeModel({
-      model: "gemini-flash-latest",
+      model: "gemini-3-flash-preview",
       systemInstruction: systemInstruction
     });
 
@@ -31,11 +31,32 @@ export const handler = async (event: any) => {
       statusCode: 200,
       body: JSON.stringify({ answer: response.text() }),
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
+
+    const msg = error?.message || '';
+    const status = error?.status || error?.httpStatusCode || 0;
+
+    // Rate limit hit (free tier daily limit)
+    if (status === 429 || msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate')) {
+      return {
+        statusCode: 429,
+        body: JSON.stringify({ error: "yefris has spoken too much today. the daily limit has been reached. try again tomorrow." }),
+      };
+    }
+
+    // Auth / invalid API key
+    if (status === 403 || status === 401 || msg.includes('403') || msg.includes('401') || msg.toLowerCase().includes('api key')) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ error: "yefris cannot authenticate. the API key may be invalid or missing." }),
+      };
+    }
+
+    // Everything else
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Yefris is oblivious to your struggles. The connection is lost in the flesh." }),
+      body: JSON.stringify({ error: "something went wrong on yefris' end. try again in a moment." }),
     };
   }
 };

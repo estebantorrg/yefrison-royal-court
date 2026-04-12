@@ -9,13 +9,14 @@ export const askYefris = async (question: string): Promise<string> => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errData = await response.json().catch(() => null);
+      throw new Error(errData?.error || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.answer || "Yefris remains silent. Silence is oblivious joy.";
-  } catch (error) {
+    return data.answer || "yefris remains silent. silence is oblivious joy.";
+  } catch (error: any) {
     console.error("Error asking Yefris:", error);
-    throw new Error("The connection is severed. Yefris cannot be reached at this time.");
+    throw new Error(error?.message || "the connection is severed. yefris cannot be reached at this time.");
   }
 };
