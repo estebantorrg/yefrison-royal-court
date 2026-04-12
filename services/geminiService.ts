@@ -1,4 +1,4 @@
-export const askSirYuleinis = async (question: string): Promise<string> => {
+export const askYefris = async (question: string): Promise<string> => {
   try {
     const response = await fetch('/.netlify/functions/ask', {
       method: 'POST',
@@ -13,9 +13,9 @@ export const askSirYuleinis = async (question: string): Promise<string> => {
     }
 
     const data = await response.json();
-    return data.answer || "Sir Yuleinis has no comment at this time.";
+    return data.answer || "Yefris remains silent. Silence is oblivious joy.";
   } catch (error) {
-    console.error("Error asking Sir Yuleinis:", error);
-    throw new Error("Sir Yuleinis is currently napping and cannot be disturbed. Please try again after his royal slumber.");
+    console.error("Error asking Yefris:", error);
+    throw new Error("The connection to the flesh is severed. Yefris cannot be reached at this time.");
   }
 };

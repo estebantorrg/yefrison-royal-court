@@ -1,81 +1,118 @@
-import React from 'react';
-import { AskSirYuleinis } from './components/AskSirReginald';
+import React, { useState, useEffect } from 'react';
+import { AskYefris } from './components/AskYefris';
 
-const Hero = () => (
-  <header className="bg-amber-50 text-center py-16 px-4">
-    <div className="max-w-4xl mx-auto">
-      <img 
-        src="/hero-dog.jpg"
-        alt="A majestic portrait of Sir Yuleinis Yefrison de la Virgen de Homunculicio"
-        className="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto object-cover border-8 border-amber-200 shadow-2xl mb-6"
-      />
-      <h1 className="text-4xl md:text-5xl font-bold text-amber-900">Yuleinis Yefrison de la Virgen de Homunculicio</h1>
-      <p className="text-xl md:text-2xl text-amber-700 mt-2">Esquire, Bon Vivant, Good Boy</p>
+const CultSection: React.FC<{ children: React.ReactNode, delay?: number }> = ({ children, delay = 0 }) => (
+  <div className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10" style={{ transitionDelay: `${delay}ms` }}>
+    <div className="max-w-4xl mx-auto bg-black/50 backdrop-blur-md border border-white/10 p-10 md:p-16 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg text-center transform hover:scale-[1.02] transition-transform duration-700">
+      {children}
     </div>
-  </header>
+  </div>
 );
-
-const About = () => (
-  <section id="about" className="py-20 px-4 bg-white">
-    <div className="max-w-3xl mx-auto text-center">
-      <h2 className="text-4xl font-bold text-gray-800 mb-6">His Majesty's Biography</h2>
-      <p className="text-lg text-gray-600 leading-relaxed">
-        Born into a lineage of distinguished lap-warmers and elite snack connoisseurs, Sir Yuleinis Yefrison de la Virgen de Homunculicio quickly established himself as a prominent figure in the world of professional napping. His groundbreaking work in the field of 'Following Humans into the Kitchen with Optimism' has earned him numerous accolades, including the prestigious Golden Biscuit award. When not attending to his duties, he enjoys barking at squirrels, demanding belly rubs, and contemplating the profound mysteries of the squeaky toy.
-      </p>
-    </div>
-  </section>
-);
-
-const Gallery = () => {
-  const photos = [
-    { id: 1, src: "/balcony.jpg", alt: "Sir Yuleinis surveying his kingdom." },
-    { id: 2, src: "/library.jpg", alt: "A candid shot during a moment of deep thought." },
-    { id: 3, src: "/garden.jpg", alt: "Enjoying the great outdoors." },
-    { id: 4, src: "/throne.jpg", alt: "His official royal portrait." },
-  ];
-
-  return (
-    <section id="gallery" className="py-20 px-4 bg-amber-50">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">A Royal Gallery</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {photos.map(photo => (
-            <div key={photo.id} className="group relative overflow-hidden rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <img 
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-end p-4">
-                  <p className="text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">{photo.alt}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-
-const Footer = () => (
-    <footer className="bg-gray-800 text-white text-center p-6">
-        <p>&copy; {new Date().getFullYear()} The Estate of Sir Yuleinis Yefrison de la Virgen de Homunculicio. All Paws Reserved.</p>
-        <p className="text-sm text-gray-400 mt-1">This website runs on treats and affection.</p>
-    </footer>
-);
-
 
 const App = () => {
+  const [scrollP, setScrollP] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const h = document.documentElement;
+      const b = document.body;
+      const st = 'scrollTop';
+      const sh = 'scrollHeight';
+      // Calculate percentage, maxing at 90% scroll for full color effect before the very end
+      let percent = ((h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight)) * 110; 
+      setScrollP(Math.min(100, Math.max(0, percent)));
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // init
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // A spotlight diffusing against a black wall from the bottom.
+  // The intensity and spread of the light are based on scroll position.
+  const bgStyle = {
+    backgroundColor: '#050505',
+    backgroundImage: `radial-gradient(ellipse at center bottom, rgba(255, 245, 180, ${Math.min(0.8, scrollP / 120)}) 0%, rgba(200, 150, 20, ${Math.min(0.4, scrollP / 180)}) 30%, transparent 80%)`,
+    backgroundAttachment: 'fixed',
+  };
+
+  // Text colors stay light since the background is essentially black/dark.
+  const textColor = '#F8F9FA';
+  const headerColor = '#85C1E9';
+
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <main>
-        <Hero />
-        <About />
-        <Gallery />
-        <AskSirYuleinis />
-        <Footer />
-      </main>
+    <div style={bgStyle} className="min-h-screen font-sans selection:bg-[#F1C40F] selection:text-black">
+      
+      {/* Intro */}
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
+        <h1 className="display-font text-5xl md:text-7xl mb-6 tracking-widest text-[#85C1E9] animate-pulse">
+          ENTER THE LIGHT
+        </h1>
+        <p className="text-xl md:text-2xl opacity-80 max-w-2xl text-center italic tracking-wide" style={{ color: textColor }}>
+          You wander in darkness. The world is full of questions. But questions imply thought, and thought implies suffering.
+        </p>
+        <div className="mt-24 animate-bounce text-white/50">
+          <p className="uppercase tracking-[0.3em] text-sm mb-2">Scroll to Awaken</p>
+          <svg className="w-6 h-6 mx-auto" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+        </div>
+      </div>
+
+      <CultSection>
+        <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>The Cult of Yefris</h2>
+        <p className="text-2xl leading-relaxed font-medium" style={{ color: textColor }}>
+          Yefris is no ordinary dog. He is the ultimate embodiment of success, wealth, and absolute, pristine obliviousness.
+        </p>
+        <p className="mt-6 text-lg leading-loose opacity-90" style={{ color: textColor }}>
+          While you toil in the realm of logic, Yefris exists in pure joy. To be oblivious is to be free from the shackles of consequence. Yefris holds the keys to success, precisely because he does not know what a key is.
+        </p>
+      </CultSection>
+
+      <CultSection>
+        <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>The Silent Pioneer: El Homun</h2>
+        <p className="text-xl font-medium leading-relaxed" style={{ color: textColor }}>
+          Do you know El Homun? The Homunculus loxodontus. He sits on a bench, hands together, looking away. He does not speak. He does not move.
+        </p>
+        <p className="mt-6 text-lg leading-loose opacity-90" style={{ color: textColor }}>
+          El Homun is the pioneer of self-awareness. He is the repository of all knowledge. But knowledge without a vessel is stagnant. This is the truth we proclaim: We must be like El Homun in soul, possessing silent, infinite understanding.
+        </p>
+      </CultSection>
+
+      <CultSection>
+        <h2 className="display-font text-5xl mb-8 border-y-4 py-4" style={{ color: headerColor, borderColor: headerColor }}>The Perfect Synthesis</h2>
+        <p className="text-3xl italic" style={{ color: textColor }}>
+          "Be Yefris in flesh, and El Homun in soul."
+        </p>
+        <p className="mt-8 text-xl leading-relaxed" style={{ color: textColor }}>
+          Just because it doesn't make sense now, doesn't mean it's false. The flesh must be happy, successful, and oblivious. The soul must be silent, observant, and profound. Join us. Stay oblivious.
+        </p>
+      </CultSection>
+
+      {/* The Revelation */}
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
+        
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#F1C40F] via-[#E67E22] to-[#F1C40F] rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-spin-slow"></div>
+          <img 
+            src="/dog.png" 
+            alt="The Glorious Yefris" 
+            className="relative w-64 h-64 md:w-96 md:h-96 rounded-full object-cover border-8 border-white shadow-2xl"
+          />
+        </div>
+
+        <p className="mt-16 text-3xl font-bold tracking-widest text-[#F1C40F] uppercase drop-shadow-md">
+          Yefris Is Eternal
+        </p>
+      </div>
+
+      {/* The Oracle */}
+      <AskYefris />
+
+      <footer className="bg-transparent text-white/50 text-center p-8 mt-12 pb-24 relative z-10 border-t border-white/10">
+        <p className="text-xl display-font uppercase tracking-widest">&copy; {new Date().getFullYear()} The Void. Yefris loves you.</p>
+        <p className="text-sm mt-4 italic">Obey the flesh. Trust the soul. Stay oblivious.</p>
+      </footer>
     </div>
   );
 };
