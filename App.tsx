@@ -10,6 +10,7 @@ const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: st
 );
 
 const App = () => {
+  const [hasReachedVideo, setHasReachedVideo] = useState(false);
   const [scrollP, setScrollP] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -29,22 +30,29 @@ const App = () => {
     handleScroll(); // init
     
     // Intersection Observer for Youtube Autoplay
-    const observer = new IntersectionObserver((entries) => {
+    const shadowObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && iframeRef.current) {
-          iframeRef.current.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-        } else if (!entry.isIntersecting && iframeRef.current) {
-          iframeRef.current.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        if (entry.isIntersecting) {
+          setHasReachedVideo(true);
+          // Auto-play via postMessage as fallback (if iframe already loaded)
+          if (iframeRef.current && iframeRef.current.contentWindow) {
+            iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
+          }
+        } else {
+          // Pause if scrolling away
+          if (iframeRef.current && iframeRef.current.contentWindow) {
+            iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "command", func: "pauseVideo", args: [] }), "*");
+          }
         }
       });
     }, { threshold: 0.5 });
     
     const section = document.getElementById('celebrities');
-    if (section) observer.observe(section);
+    if (section) shadowObserver.observe(section);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
+      shadowObserver.disconnect();
     };
   }, []);
 
@@ -71,9 +79,8 @@ const App = () => {
         {/* SIDEBAR NAVBAR (Epsilon Style) */}
         <nav className="lg:w-64 sticky top-0 lg:h-screen bg-black/80 lg:bg-black/60 border-b lg:border-b-0 lg:border-r border-white/10 backdrop-blur-md z-50 flex-shrink-0 w-full lg:overflow-y-auto shadow-[0_5px_15px_rgba(0,0,0,0.5)] lg:shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
           <div className="flex items-center justify-between p-4 lg:p-6 lg:pb-6 border-b lg:border-white/20 border-transparent">
-            <div className="text-left lg:text-center">
-              <h2 className="display-font text-2xl lg:text-3xl text-[#F1C40F] mb-1 drop-shadow-md leading-none">Yefris</h2>
-              <p className="text-[#85C1E9] uppercase tracking-[0.2em] text-[10px] font-bold">The Royal Court</p>
+            <div className="text-left lg:text-center w-full">
+              <h2 className="display-font text-2xl lg:text-3xl text-[#F1C40F] drop-shadow-md leading-none">Yefris</h2>
             </div>
             {/* Hamburger Button */}
             <button className="lg:hidden text-white hover:text-[#F1C40F] focus:outline-none p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -192,7 +199,7 @@ const App = () => {
               <iframe 
                 ref={iframeRef}
                 className="w-full h-full rounded shadow-[0_0_15px_rgba(243,156,18,0.3)] border border-[#F39C12]/30"
-                src="https://www.youtube.com/embed/GriAXvDLqwk?enablejsapi=1" 
+                src={`https://www.youtube.com/embed/GriAXvDLqwk?enablejsapi=1${hasReachedVideo ? '&autoplay=1' : ''}`}
                 title="Cherry Scom - Dame Guevo" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
