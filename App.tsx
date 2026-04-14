@@ -59,6 +59,8 @@ const App = () => {
         </div>
       </div>
 
+
+
       <CultSection>
         <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>The Cult of Yefris</h2>
         <p className="text-2xl leading-relaxed font-medium" style={{ color: textColor }}>
@@ -103,7 +105,7 @@ const App = () => {
         </p>
         <div className="flex justify-center mt-8">
           <img 
-            src="https://placehold.co/600x400/050505/E74C3C?text=YEFRIS+WITH+LASERS" 
+            src="/yefris_laser.png" 
             alt="Yefris with lasers" 
             className="w-full max-w-lg rounded border border-red-500 shadow-[0_0_20px_rgba(231,76,60,0.4)]"
           />
@@ -111,26 +113,80 @@ const App = () => {
       </CultSection>
 
       <CultSection>
-        <h2 className="display-font text-4xl mb-8 text-[#F39C12]">Celebrities of the Cult</h2>
-        <p className="text-xl mb-6 leading-relaxed" style={{ color: textColor }}>
-          Those chosen to spread the influence of Yefris span all forms of media. Notable among our highest ranks is <strong className="text-white">Cherry Scom</strong>.
-        </p>
-        <div className="flex flex-col md:flex-row items-center gap-8 justify-center">
-          <div className="w-1/2 md:w-1/3">
-            <img 
-              src="https://placehold.co/400x400/050505/F39C12?text=CHERRY+SCOM" 
-              alt="Cherry Scom placeholder" 
-              className="w-full h-auto rounded-full border-4 border-[#F39C12]"
-            />
+        <h2 className="display-font text-5xl mb-12 text-[#F39C12] border-b border-[#F39C12]/50 pb-4">Celebrities of the Cult</h2>
+        
+        <div className="mb-20">
+          <h3 className="text-3xl font-bold mb-4 text-[#E67E22] display-font text-left pl-4 border-l-4 border-[#E67E22]">
+            The Modern Era
+          </h3>
+          <p className="text-xl mb-8 leading-relaxed text-left pl-4" style={{ color: textColor }}>
+            Those chosen to spread the influence of Yefris span all forms of media. Notable among our highest ranks is <strong className="text-white">Cherry Scom</strong>.
+          </p>
+          <div className="flex flex-col md:flex-row items-center gap-8 justify-center mt-6">
+            <div className="w-1/2 md:w-1/3">
+              <img 
+                src="/cherry_scom.png" 
+                alt="Cherry Scom" 
+                className="w-full h-auto rounded-full border-4 border-[#F39C12] shadow-[0_0_30px_rgba(243,156,18,0.4)]"
+              />
+            </div>
+            <div className="w-full md:w-2/3 aspect-video">
+              <iframe 
+                className="w-full h-full rounded shadow-[0_0_15px_rgba(243,156,18,0.3)] border border-[#F39C12]/30"
+                src="https://www.youtube.com/embed/GriAXvDLqwk" 
+                title="Cherry Scom - Dame Guevo" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              ></iframe>
+            </div>
           </div>
-          <div className="w-full md:w-2/3 aspect-video">
-            <iframe 
-              className="w-full h-full rounded shadow-[0_0_15px_rgba(243,156,18,0.3)] border border-[#F39C12]/30"
-              src="https://www.youtube.com/embed/GriAXvDLqwk" 
-              title="Cherry Scom - Dame Guevo" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowFullScreen
-            ></iframe>
+        </div>
+
+        <div>
+          <h3 className="text-3xl font-bold mb-6 text-[#95A5A6] display-font text-left pl-4 border-l-4 border-[#95A5A6]">
+            Pre-Yefris Era (Antiguo Testamento): Cacorro City
+          </h3>
+          <p className="text-lg leading-relaxed mb-10 opacity-90 text-left pl-4" style={{ color: textColor }}>
+            Before the ultimate synthesis of flesh and soul, the groundwork was laid in the dystopian, politically-absurd realm of <strong>Cacorro City</strong>. 
+            The following key entities paved the path for our oblivious salvation:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <div className="bg-gradient-to-br from-black/60 to-black/30 p-8 rounded-xl border border-white/5 shadow-lg">
+              <h4 className="text-2xl font-bold text-[#85C1E9] mb-4">El Régimen de Pops</h4>
+              <ul className="space-y-4 text-base text-[#F8F9FA]/80">
+                <li className="flex flex-col">
+                  <strong className="text-white text-lg">Pops & Pops Microcefálico</strong> 
+                  <span className="opacity-75">El Líder Supremo de autoridad máxima y su amalgama genética.</span>
+                </li>
+                <li className="flex flex-col">
+                  <strong className="text-white text-lg">Valeroka</strong> 
+                  <span className="opacity-75">Cantante nacionalista y propaganda emocional del régimen.</span>
+                </li>
+                <li className="flex flex-col">
+                  <strong className="text-white text-lg">Turbioflex</strong> 
+                  <span className="opacity-75">Brazo ejecutor e ideológico de naturaleza gelatinosa.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-black/60 to-black/30 p-8 rounded-xl border border-white/5 shadow-lg">
+              <h4 className="text-2xl font-bold text-[#E74C3C] mb-4">La Resistencia & El Caos</h4>
+              <ul className="space-y-4 text-base text-[#F8F9FA]/80">
+                <li className="flex flex-col">
+                  <strong className="text-white text-lg">Ñandú Garay</strong> 
+                  <span className="opacity-75">Orador en jopara, rostro absoluto de la insurgencia.</span>
+                </li>
+                <li className="flex flex-col">
+                  <strong className="text-white text-lg">Harms</strong> 
+                  <span className="opacity-75">Agente de entropía; generador del conflicto incesante.</span>
+                </li>
+                <li className="flex flex-col">
+                  <strong className="text-white text-lg">Arnol Chuaseneguer</strong> 
+                  <span className="opacity-75">Representación del hartazgo social forjado en machete.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </CultSection>
