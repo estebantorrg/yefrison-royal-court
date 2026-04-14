@@ -1,11 +1,16 @@
-export const askYefris = async (question: string): Promise<string> => {
+export interface ChatMessage {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+}
+
+export const askYefris = async (question: string, history: ChatMessage[] = []): Promise<string> => {
   try {
     const response = await fetch('/api/ask', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, history }),
     });
 
     if (!response.ok) {

@@ -12,7 +12,7 @@ export const onRequestPost = async (context: any) => {
   try {
     const { request, env } = context;
     const body = await request.json();
-    const { question } = body;
+    const { question, history } = body;
 
     const apiKey = env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
@@ -28,7 +28,11 @@ export const onRequestPost = async (context: any) => {
       systemInstruction: systemInstruction
     });
 
-    const result = await model.generateContent(question);
+    const chat = model.startChat({
+      history: history || [],
+    });
+
+    const result = await chat.sendMessage(question);
     const response = await result.response;
 
     return new Response(JSON.stringify({ answer: response.text() }), {
