@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AskYefris } from './components/AskYefris';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
@@ -11,6 +11,8 @@ const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: st
 
 const App = () => {
   const [scrollP, setScrollP] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,8 +27,31 @@ const App = () => {
     
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // init
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Intersection Observer for Youtube Autoplay
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && iframeRef.current) {
+          iframeRef.current.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        } else if (!entry.isIntersecting && iframeRef.current) {
+          iframeRef.current.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    const section = document.getElementById('celebrities');
+    if (section) observer.observe(section);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
   }, []);
+
+  // Close mobile menu when clicking a link
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
+  };
 
   // A spotlight diffusing against a black wall from the bottom.
   // The intensity and spread of the light are based on scroll position.
@@ -44,19 +69,32 @@ const App = () => {
     <div style={bgStyle} className="min-h-screen font-sans selection:bg-[#F1C40F] selection:text-black">
       <div className="flex flex-col lg:flex-row relative">
         {/* SIDEBAR NAVBAR (Epsilon Style) */}
-        <nav className="lg:w-64 lg:sticky lg:top-0 lg:h-screen p-6 bg-black/60 border-r border-white/10 backdrop-blur-md z-50 overflow-y-auto shadow-[5px_0_15px_rgba(0,0,0,0.5)] flex-shrink-0">
-          <div className="text-center mb-8 border-b border-white/20 pb-6">
-            <h2 className="display-font text-3xl text-[#F1C40F] mb-1 drop-shadow-md">Yefris</h2>
-            <p className="text-[#85C1E9] uppercase tracking-[0.2em] text-[10px] font-bold">The Royal Court</p>
+        <nav className="lg:w-64 sticky top-0 lg:h-screen bg-black/80 lg:bg-black/60 border-b lg:border-b-0 lg:border-r border-white/10 backdrop-blur-md z-50 flex-shrink-0 w-full lg:overflow-y-auto shadow-[0_5px_15px_rgba(0,0,0,0.5)] lg:shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+          <div className="flex items-center justify-between p-4 lg:p-6 lg:pb-6 border-b lg:border-white/20 border-transparent">
+            <div className="text-left lg:text-center">
+              <h2 className="display-font text-2xl lg:text-3xl text-[#F1C40F] mb-1 drop-shadow-md leading-none">Yefris</h2>
+              <p className="text-[#85C1E9] uppercase tracking-[0.2em] text-[10px] font-bold">The Royal Court</p>
+            </div>
+            {/* Hamburger Button */}
+            <button className="lg:hidden text-white hover:text-[#F1C40F] focus:outline-none p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                )}
+              </svg>
+            </button>
           </div>
-          <ul className="flex flex-col gap-3">
-            <li><a href="#intro" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Intro</a></li>
-            <li><a href="#cult" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Cult</a></li>
-            <li><a href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
-            <li><a href="#practices" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Beliefs</a></li>
-            <li><a href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
-            <li><a href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
-            <li><a href="#ask-yefris" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
+          
+          <ul className={`${isMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col gap-3 p-4 lg:p-6 bg-black/90 lg:bg-transparent absolute lg:static top-full left-0 w-full lg:w-auto shadow-xl lg:shadow-none border-b border-white/10 lg:border-none`}>
+            <li><a onClick={handleLinkClick} href="#intro" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Intro</a></li>
+            <li><a onClick={handleLinkClick} href="#cult" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Cult</a></li>
+            <li><a onClick={handleLinkClick} href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
+            <li><a onClick={handleLinkClick} href="#practices" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Beliefs</a></li>
+            <li><a onClick={handleLinkClick} href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
+            <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
+            <li><a onClick={handleLinkClick} href="#ask-yefris" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
           </ul>
         </nav>
 
@@ -152,8 +190,9 @@ const App = () => {
             </div>
             <div className="w-full md:w-2/3 aspect-video">
               <iframe 
+                ref={iframeRef}
                 className="w-full h-full rounded shadow-[0_0_15px_rgba(243,156,18,0.3)] border border-[#F39C12]/30"
-                src="https://www.youtube.com/embed/GriAXvDLqwk" 
+                src="https://www.youtube.com/embed/GriAXvDLqwk?enablejsapi=1" 
                 title="Cherry Scom - Dame Guevo" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
