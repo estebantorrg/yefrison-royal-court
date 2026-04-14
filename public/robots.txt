@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yefris.netlify.app/sitemap.xml
+Sitemap: https://yefris.pages.dev/sitemap.xml

@@ -3,7 +3,7 @@
 An interactive web application built to showcase the full software development lifecycle, from concept to a live, deployed product.
 
 **➡️ LIVE DEMO 🚀**
-**[https://yefris.netlify.app/](https://yefris.netlify.app/)**
+**[https://yefris.pages.dev/](https://yefris.pages.dev/)**
 
 ## Main Features
 *   A fully styled and responsive static website featuring the philosophy and interactive AI oracle of Yefris.
