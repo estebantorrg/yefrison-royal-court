@@ -20,10 +20,13 @@ export const AskYefris: React.FC = () => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editTitleBuffer, setEditTitleBuffer] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For mobile UI
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Load history from local storage on mount
@@ -35,7 +38,6 @@ export const AskYefris: React.FC = () => {
         if (Array.isArray(parsed)) {
           setSessions(parsed);
           if (parsed.length > 0) {
-            // Sort by recent and set active
             const sorted = parsed.sort((a, b) => b.updatedAt - a.updatedAt);
             setActiveSessionId(sorted[0].id);
           }
@@ -44,19 +46,16 @@ export const AskYefris: React.FC = () => {
         console.error("Failed to parse chat sessions");
       }
     } else {
-      // Create an initial empty session if none exist at all
       createNewSession();
     }
   }, []);
 
-  // Save history to local storage whenever sessions array changes
   useEffect(() => {
     if (sessions.length > 0) {
       localStorage.setItem('yefris_chat_sessions', JSON.stringify(sessions));
     }
   }, [sessions]);
 
-  // Scroll to bottom when messages in active session change
   const activeSession = sessions.find(s => s.id === activeSessionId);
   
   useEffect(() => {
@@ -75,7 +74,6 @@ export const AskYefris: React.FC = () => {
     setActiveSessionId(newId);
     setError('');
     
-    // Close sidebar on mobile after creation
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }
@@ -86,17 +84,39 @@ export const AskYefris: React.FC = () => {
     setSessions(prev => {
       const remaining = prev.filter(s => s.id !== id);
       if (remaining.length === 0) {
-        // If we deleted the last one, local storage auto-sync deletes it but we need an active session
         setTimeout(() => createNewSession(), 0);
       } else if (activeSessionId === id) {
         setActiveSessionId(remaining[0].id);
       }
-      // Clean up localStorage explicitly if empty
       if (remaining.length === 0) {
          localStorage.removeItem('yefris_chat_sessions');
       }
       return remaining;
     });
+  };
+
+  const startEditing = (e: React.MouseEvent, id: string, currentTitle: string) => {
+    e.stopPropagation();
+    setEditingSessionId(id);
+    setEditTitleBuffer(currentTitle);
+  };
+
+  const saveEdit = () => {
+    if (editingSessionId && editTitleBuffer.trim() !== '') {
+      setSessions(prev => prev.map(s => 
+        s.id === editingSessionId ? { ...s, title: editTitleBuffer.trim() } : s
+      ));
+    }
+    setEditingSessionId(null);
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEdit();
+    } else if (e.key === 'Escape') {
+      setEditingSessionId(null);
+    }
   };
 
   const submitQuestion = async () => {
@@ -109,11 +129,10 @@ export const AskYefris: React.FC = () => {
     const userMsgId = Date.now().toString();
     const userMsg: DisplayMessage = { id: userMsgId, role: 'user', text: newQuestion };
     
-    // Optimistic update of the session
     setSessions(prev => prev.map(session => {
       if (session.id === activeSessionId) {
-        // Generate title if it's the first message
-        const newTitle = session.messages.length === 0 
+        // Generate title if it's the first message and still named "New Divination"
+        const newTitle = session.messages.length === 0 && session.title === 'New Divination'
           ? (newQuestion.length > 25 ? newQuestion.substring(0, 25) + '...' : newQuestion)
           : session.title;
           
@@ -130,7 +149,6 @@ export const AskYefris: React.FC = () => {
     setLoading(true);
 
     try {
-      // Grab the active session history right before sending (to format to Gemini's expected array)
       const currentSessionDetails = sessions.find(s => s.id === activeSessionId);
       const pastMessagesForPayload = currentSessionDetails ? currentSessionDetails.messages : [];
       
@@ -214,25 +232,51 @@ export const AskYefris: React.FC = () => {
               <div 
                 key={session.id}
                 onClick={() => {
-                  setActiveSessionId(session.id);
-                  if(window.innerWidth < 1024) setIsSidebarOpen(false);
+                  if (editingSessionId !== session.id) {
+                     setActiveSessionId(session.id);
+                     if(window.innerWidth < 1024) setIsSidebarOpen(false);
+                  }
                 }}
-                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border ${
+                className={`flex items-center justify-between p-3 rounded-lg transition-all border ${
                   activeSessionId === session.id 
                     ? 'bg-[#E67E22]/20 border-[#E67E22] text-[#F1C40F]' 
                     : 'bg-transparent border-transparent hover:bg-white/5 text-gray-300'
-                }`}
+                } ${editingSessionId === session.id ? 'opacity-100 cursor-default' : 'cursor-pointer'}`}
               >
-                <div className="truncate text-sm font-medium pr-2">
-                  {session.title}
-                </div>
-                <button 
-                  onClick={(e) => deleteSession(e, session.id)}
-                  className="text-gray-500 hover:text-red-400 p-1 flex-shrink-0 transition-colors"
-                  title="Delete Thread"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
+                {editingSessionId === session.id ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    value={editTitleBuffer}
+                    onChange={(e) => setEditTitleBuffer(e.target.value)}
+                    onBlur={saveEdit}
+                    onKeyDown={handleEditKeyDown}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full bg-black/50 text-white outline-none border-b border-[#F1C40F] text-sm py-1 font-medium px-1"
+                  />
+                ) : (
+                  <>
+                    <div className="truncate text-sm font-medium pr-2">
+                      {session.title}
+                    </div>
+                    <div className="flex items-center gap-1 opacity-60 hover:opacity-100 flex-shrink-0">
+                      <button 
+                        onClick={(e) => startEditing(e, session.id, session.title)}
+                        className="text-gray-400 hover:text-blue-400 p-1 transition-colors"
+                        title="Rename Thread"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      </button>
+                      <button 
+                        onClick={(e) => deleteSession(e, session.id)}
+                        className="text-gray-400 hover:text-red-400 p-1 transition-colors"
+                        title="Delete Thread"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
