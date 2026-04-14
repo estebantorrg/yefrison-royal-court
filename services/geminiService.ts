@@ -1,6 +1,6 @@
 export const askYefris = async (question: string): Promise<string> => {
   try {
-    const response = await fetch('/.netlify/functions/ask', {
+    const response = await fetch('/api/ask', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

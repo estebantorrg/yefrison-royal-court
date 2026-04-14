@@ -8,15 +8,21 @@ rules for you:
 3. answer as yefris according to the lore described above.
 4. give calm, happy advice to ignore stress outwardly while solving it inwardly through el homun.`;
 
-export const handler = async (event: any) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
-
+export const onRequestPost = async (context: any) => {
   try {
-    const { question } = JSON.parse(event.body);
+    const { request, env } = context;
+    const body = await request.json();
+    const { question } = body;
 
-    const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || '');
+    const apiKey = env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "Configuration Error", details: "No API key found in server environment." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3-flash-preview",
       systemInstruction: systemInstruction
@@ -25,36 +31,33 @@ export const handler = async (event: any) => {
     const result = await model.generateContent(question);
     const response = await result.response;
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ answer: response.text() }),
-    };
+    return new Response(JSON.stringify({ answer: response.text() }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-
+    
     const msg = error?.message || '';
     const status = error?.status || error?.httpStatusCode || 0;
 
-    // Rate limit hit (free tier daily limit)
     if (status === 429 || msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate')) {
-      return {
-        statusCode: 429,
-        body: JSON.stringify({ error: "yefris went to take a break. come back later." }),
-      };
+      return new Response(JSON.stringify({ error: "yefris went to take a break. come back later." }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Auth / invalid API key
     if (status === 403 || status === 401 || msg.includes('403') || msg.includes('401') || msg.toLowerCase().includes('api key')) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ error: "yefris cannot authenticate. the API key may be invalid or missing." }),
-      };
+      return new Response(JSON.stringify({ error: "yefris cannot authenticate. the API key may be invalid or missing." }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Everything else
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "something went wrong on yefris' end. try again in a moment." }),
-    };
+    return new Response(JSON.stringify({ error: "something went wrong on yefris' end. try again in a moment." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+    });
   }
 };
