@@ -203,7 +203,7 @@ const App = () => {
 
         <div>
           <h3 className="text-3xl font-bold mb-6 text-[#95A5A6] display-font text-left pl-4 border-l-4 border-[#95A5A6]">
-            Pre-Yefris Era (Antiguo Testamento): Cacorro City
+            Pre-Yefris Era (Old Testament): Cacorro City
           </h3>
           <p className="text-lg leading-relaxed mb-10 opacity-90 text-left pl-4" style={{ color: textColor }}>
             Before the ultimate synthesis of flesh and soul, the groundwork was laid in the dystopian, politically-absurd realm of <strong>Cacorro City</strong>. 
@@ -212,37 +212,37 @@ const App = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             <div className="bg-gradient-to-br from-black/60 to-black/30 p-8 rounded-xl border border-white/5 shadow-lg">
-              <h4 className="text-2xl font-bold text-[#85C1E9] mb-4">El Régimen de Pops</h4>
+              <h4 className="text-2xl font-bold text-[#85C1E9] mb-4">The Pops Regime</h4>
               <ul className="space-y-4 text-base text-[#F8F9FA]/80">
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Pops & Pops Microcefálico</strong> 
-                  <span className="opacity-75">El Líder Supremo de autoridad máxima y su amalgama genética.</span>
+                  <span className="opacity-75">The Supreme Leader of absolute authority and his genetic amalgam.</span>
                 </li>
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Valeroka</strong> 
-                  <span className="opacity-75">Cantante nacionalista y propaganda emocional del régimen.</span>
+                  <span className="opacity-75">Nationalist singer and emotional propaganda for the regime.</span>
                 </li>
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Turbioflex</strong> 
-                  <span className="opacity-75">Brazo ejecutor e ideológico de naturaleza gelatinosa.</span>
+                  <span className="opacity-75">The executing and ideological arm of a gelatinous nature.</span>
                 </li>
               </ul>
             </div>
 
             <div className="bg-gradient-to-br from-black/60 to-black/30 p-8 rounded-xl border border-white/5 shadow-lg">
-              <h4 className="text-2xl font-bold text-[#E74C3C] mb-4">La Resistencia & El Caos</h4>
+              <h4 className="text-2xl font-bold text-[#E74C3C] mb-4">The Resistance & Chaos</h4>
               <ul className="space-y-4 text-base text-[#F8F9FA]/80">
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Ñandú Garay</strong> 
-                  <span className="opacity-75">Orador en jopara, rostro absoluto de la insurgencia.</span>
+                  <span className="opacity-75">Jopara orator, the absolute face of the popular insurgency.</span>
                 </li>
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Harms</strong> 
-                  <span className="opacity-75">Agente de entropía; generador del conflicto incesante.</span>
+                  <span className="opacity-75">Agent of entropy; generator of incessant conflict.</span>
                 </li>
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Arnol Chuaseneguer</strong> 
-                  <span className="opacity-75">Representación del hartazgo social forjado en machete.</span>
+                  <span className="opacity-75">The embodiment of societal exhaustion forged by a machete.</span>
                 </li>
               </ul>
             </div>
