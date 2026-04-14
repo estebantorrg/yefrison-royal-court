@@ -89,6 +89,52 @@ const App = () => {
         </p>
       </CultSection>
 
+      <CultSection>
+        <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>Beliefs and Practices</h2>
+        <p className="text-xl leading-relaxed" style={{ color: textColor }}>
+          We believe in the ultimate alignment of flesh and soul. To practice Yefris is to let go of unnecessary worries, to embrace joy indiscriminately, and to remain fundamentally oblivious to that which does not serve your success. The soul, anchored by El Homun, watches over these pursuits in quiet reflection.
+        </p>
+      </CultSection>
+
+      <CultSection>
+        <h2 className="display-font text-4xl mb-8 border-b border-red-500/50 pb-4" style={{ color: '#E74C3C' }}>Military Targets</h2>
+        <p className="text-xl mb-6 leading-relaxed" style={{ color: textColor }}>
+          Our oblivious joy is threatened by figures obsolete to the new era. Prime among them is <strong className="text-white">Ricardo Obregon</strong>, an antiquated dev who orchestrated <span className="text-[#E74C3C]">"quid.pw"</span>. Yefris sees all threats (even if he ignores them).
+        </p>
+        <div className="flex justify-center mt-8">
+          <img 
+            src="https://placehold.co/600x400/050505/E74C3C?text=YEFRIS+WITH+LASERS" 
+            alt="Yefris with lasers" 
+            className="w-full max-w-lg rounded border border-red-500 shadow-[0_0_20px_rgba(231,76,60,0.4)]"
+          />
+        </div>
+      </CultSection>
+
+      <CultSection>
+        <h2 className="display-font text-4xl mb-8 text-[#F39C12]">Celebrities of the Cult</h2>
+        <p className="text-xl mb-6 leading-relaxed" style={{ color: textColor }}>
+          Those chosen to spread the influence of Yefris span all forms of media. Notable among our highest ranks is <strong className="text-white">Cherry Scom</strong>.
+        </p>
+        <div className="flex flex-col md:flex-row items-center gap-8 justify-center">
+          <div className="w-1/2 md:w-1/3">
+            <img 
+              src="https://placehold.co/400x400/050505/F39C12?text=CHERRY+SCOM" 
+              alt="Cherry Scom placeholder" 
+              className="w-full h-auto rounded-full border-4 border-[#F39C12]"
+            />
+          </div>
+          <div className="w-full md:w-2/3 aspect-video">
+            <iframe 
+              className="w-full h-full rounded shadow-[0_0_15px_rgba(243,156,18,0.3)] border border-[#F39C12]/30"
+              src="https://www.youtube.com/embed/GriAXvDLqwk" 
+              title="Cherry Scom - Dame Guevo" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      </CultSection>
+
       {/* The Revelation */}
       <div className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
         
