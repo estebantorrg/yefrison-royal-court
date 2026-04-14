@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { AskYefris } from './components/AskYefris';
 
-const CultSection: React.FC<{ children: React.ReactNode, delay?: number }> = ({ children, delay = 0 }) => (
-  <div className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10" style={{ transitionDelay: `${delay}ms` }}>
-    <div className="max-w-4xl mx-auto bg-black/50 backdrop-blur-md border border-white/10 p-10 md:p-16 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg text-center transform hover:scale-[1.02] transition-transform duration-700">
+const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
+  <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
+    <div className="w-full max-w-4xl mx-auto bg-black/50 backdrop-blur-md border border-white/10 p-10 md:p-16 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg text-center transform hover:scale-[1.02] transition-transform duration-700">
       {children}
     </div>
-  </div>
+  </section>
 );
 
 const App = () => {
@@ -42,10 +42,30 @@ const App = () => {
 
   return (
     <div style={bgStyle} className="min-h-screen font-sans selection:bg-[#F1C40F] selection:text-black">
-      
-      {/* Intro */}
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
-        <h1 className="display-font text-5xl md:text-7xl mb-6 tracking-widest text-[#85C1E9] animate-pulse">
+      <div className="flex flex-col lg:flex-row relative">
+        {/* SIDEBAR NAVBAR (Epsilon Style) */}
+        <nav className="lg:w-64 lg:sticky lg:top-0 lg:h-screen p-6 bg-black/60 border-r border-white/10 backdrop-blur-md z-50 overflow-y-auto shadow-[5px_0_15px_rgba(0,0,0,0.5)] flex-shrink-0">
+          <div className="text-center mb-8 border-b border-white/20 pb-6">
+            <h2 className="display-font text-3xl text-[#F1C40F] mb-1 drop-shadow-md">Yefris</h2>
+            <p className="text-[#85C1E9] uppercase tracking-[0.2em] text-[10px] font-bold">The Royal Court</p>
+          </div>
+          <ul className="flex flex-col gap-3">
+            <li><a href="#intro" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Intro</a></li>
+            <li><a href="#cult" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Cult</a></li>
+            <li><a href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
+            <li><a href="#practices" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Beliefs</a></li>
+            <li><a href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
+            <li><a href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
+            <li><a href="#ask-yefris" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
+          </ul>
+        </nav>
+
+        {/* MAIN CONTENT WRAPPER */}
+        <main className="flex-1 min-w-0 overflow-hidden">
+          
+          {/* Intro */}
+          <div id="intro" className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10 w-full">
+            <h1 className="display-font text-5xl md:text-7xl mb-6 text-center tracking-widest text-[#85C1E9] animate-pulse">
           ENTER THE LIGHT
         </h1>
         <p className="text-xl md:text-2xl opacity-80 max-w-2xl text-center italic tracking-wide" style={{ color: textColor }}>
@@ -61,7 +81,7 @@ const App = () => {
 
 
 
-      <CultSection>
+      <CultSection id="cult">
         <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>The Cult of Yefris</h2>
         <p className="text-2xl leading-relaxed font-medium" style={{ color: textColor }}>
           Yefris is no ordinary dog. He is the ultimate embodiment of success, wealth, and absolute, pristine obliviousness.
@@ -71,7 +91,7 @@ const App = () => {
         </p>
       </CultSection>
 
-      <CultSection>
+      <CultSection id="el-homun">
         <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>The Silent Pioneer: El Homun</h2>
         <p className="text-xl font-medium leading-relaxed" style={{ color: textColor }}>
           Do you know El Homun? The Homunculus loxodontus. He sits on a bench, hands together, looking away. He does not speak. He does not move.
@@ -91,28 +111,28 @@ const App = () => {
         </p>
       </CultSection>
 
-      <CultSection>
+      <CultSection id="practices">
         <h2 className="display-font text-4xl mb-8" style={{ color: headerColor }}>Beliefs and Practices</h2>
         <p className="text-xl leading-relaxed" style={{ color: textColor }}>
           We believe in the ultimate alignment of flesh and soul. To practice Yefris is to let go of unnecessary worries, to embrace joy indiscriminately, and to remain fundamentally oblivious to that which does not serve your success. The soul, anchored by El Homun, watches over these pursuits in quiet reflection.
         </p>
       </CultSection>
 
-      <CultSection>
+      <CultSection id="military">
         <h2 className="display-font text-4xl mb-8 border-b border-red-500/50 pb-4" style={{ color: '#E74C3C' }}>Military Targets</h2>
         <p className="text-xl mb-6 leading-relaxed" style={{ color: textColor }}>
           Our oblivious joy is threatened by figures obsolete to the new era. Prime among them is <strong className="text-white">Ricardo Obregon</strong>, an antiquated dev who orchestrated <span className="text-[#E74C3C]">"quid.pw"</span>. Yefris sees all threats (even if he ignores them).
         </p>
         <div className="flex justify-center mt-8">
           <img 
-            src="/yefris_laser.png" 
+            src="yefris_laser.png" 
             alt="Yefris with lasers" 
             className="w-full max-w-lg rounded border border-red-500 shadow-[0_0_20px_rgba(231,76,60,0.4)]"
           />
         </div>
       </CultSection>
 
-      <CultSection>
+      <CultSection id="celebrities">
         <h2 className="display-font text-5xl mb-12 text-[#F39C12] border-b border-[#F39C12]/50 pb-4">Celebrities of the Cult</h2>
         
         <div className="mb-20">
@@ -125,7 +145,7 @@ const App = () => {
           <div className="flex flex-col md:flex-row items-center gap-8 justify-center mt-6">
             <div className="w-1/2 md:w-1/3">
               <img 
-                src="/cherry_scom.png" 
+                src="cherry_scom.png" 
                 alt="Cherry Scom" 
                 className="w-full h-auto rounded-full border-4 border-[#F39C12] shadow-[0_0_30px_rgba(243,156,18,0.4)]"
               />
@@ -197,7 +217,7 @@ const App = () => {
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-[#F1C40F] via-[#E67E22] to-[#F1C40F] rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-spin-slow"></div>
           <img 
-            src="/dog.png" 
+            src="dog.png" 
             alt="The Glorious Yefris" 
             className="relative w-64 h-64 md:w-96 md:h-96 rounded-full object-cover border-8 border-white shadow-2xl"
           />
@@ -215,6 +235,8 @@ const App = () => {
         <p className="text-xl display-font uppercase tracking-widest">&copy; {new Date().getFullYear()} Yefris loves you.</p>
         <p className="text-sm mt-4 italic">Be like yefris. Trust el homun. Stay oblivious.</p>
       </footer>
+        </main>
+      </div>
     </div>
   );
 };
