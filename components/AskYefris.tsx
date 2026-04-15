@@ -163,6 +163,33 @@ export const AskYefris: React.FC = () => {
   const submitQuestion = async () => {
     if (!question.trim() || !activeSessionId) return;
 
+    const currentSession = sessions.find(s => s.id === activeSessionId);
+    const lastMsg = currentSession?.messages[currentSession.messages.length - 1];
+
+    // If the last message is already a user message and hasn't been answered, 
+    // just update it and retry instead of adding a new bubble.
+    if (lastMsg && lastMsg.role === 'user') {
+      const updatedQuestion = question;
+      setQuestion('');
+      setError('');
+      
+      setSessions(prev => prev.map(session => {
+        if (session.id === activeSessionId) {
+          return {
+            ...session,
+            updatedAt: Date.now(),
+            messages: session.messages.map((m, idx) => 
+              idx === session.messages.length - 1 ? { ...m, text: updatedQuestion } : m
+            )
+          };
+        }
+        return session;
+      }));
+      
+      await handleApiConnection(updatedQuestion, true);
+      return;
+    }
+
     const newQuestion = question;
     setQuestion('');
     setError('');
@@ -188,6 +215,21 @@ export const AskYefris: React.FC = () => {
     }));
 
     await handleApiConnection(newQuestion, false);
+  };
+
+  const deleteLastMessage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeSessionId) return;
+    setSessions(prev => prev.map(session => {
+      if (session.id === activeSessionId) {
+        return {
+          ...session,
+          messages: session.messages.slice(0, -1)
+        };
+      }
+      return session;
+    }));
+    setError('');
   };
 
   const retryLastQuestion = async () => {
@@ -328,26 +370,38 @@ export const AskYefris: React.FC = () => {
 
                 return (
                   <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div 
-                      className={`max-w-[90%] lg:max-w-[80%] p-4 lg:px-6 lg:py-5 rounded-2xl shadow-md ${
-                        msg.role === 'user' 
-                          ? 'bg-[#1F618D] border border-[#2980B9]/60 text-white rounded-br-sm' 
-                          : 'bg-[#FDF2E9] border border-amber-300/80 text-gray-900 rounded-bl-sm shadow-[0_0_15px_rgba(241,196,15,0.1)]'
-                      } ${isErrorOnLastMessage ? 'border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                    >
-                      {msg.role === 'yefris' && <h3 className="text-xs tracking-wider uppercase font-bold mb-2 text-[#D35400] opacity-80 border-b border-[#D35400]/20 pb-1 inline-block">Yefris Answers</h3>}
-                      <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
+                    <div className="relative group flex items-center gap-2 max-w-[95%] lg:max-w-[85%]">
+                      {isLastUserMessage && !loading && (
+                        <button
+                          onClick={deleteLastMessage}
+                          className="opacity-0 group-hover:opacity-100 p-2 text-gray-500 hover:text-red-400 transition-all duration-200"
+                          title="Remove stuck message"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      )}
+                      
+                      <div 
+                        className={`p-4 lg:px-6 lg:py-5 rounded-2xl shadow-md ${
+                          msg.role === 'user' 
+                            ? 'bg-[#1F618D] border border-[#2980B9]/60 text-white rounded-br-sm' 
+                            : 'bg-[#FDF2E9] border border-amber-300/80 text-gray-900 rounded-bl-sm shadow-[0_0_15px_rgba(241,196,15,0.1)]'
+                        } ${isErrorOnLastMessage ? 'border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                      >
+                        {msg.role === 'yefris' && <h3 className="text-xs tracking-wider uppercase font-bold mb-2 text-[#D35400] opacity-80 border-b border-[#D35400]/20 pb-1 inline-block">Yefris Answers</h3>}
+                        <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
+                      </div>
                     </div>
 
-                    {isErrorOnLastMessage && (
+                    {isLastUserMessage && !loading && (
                       <div className="mt-2 flex flex-col items-end w-full max-w-[90%] lg:max-w-[80%]">
-                        <span className="text-xs text-red-400 font-bold mb-1.5 px-1">{error}</span>
+                        {error && <span className="text-xs text-red-400 font-bold mb-1.5 px-1">{error}</span>}
                         <button
                           onClick={retryLastQuestion}
                           className="flex items-center gap-1 px-2.5 py-1 bg-red-900/60 hover:bg-red-800/80 border border-red-500/50 text-red-100 rounded text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
                         >
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                          Re-Connect to Yefris
+                          {error ? "Re-Connect to Yefris" : "Retry Inquiry"}
                         </button>
                       </div>
                     )}
