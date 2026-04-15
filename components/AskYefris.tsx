@@ -291,14 +291,14 @@ export const AskYefris: React.FC = () => {
           <img 
             src="/homun.webp" 
             alt="El Homun" 
-            className="max-w-full max-h-full w-full h-full object-contain opacity-0 homun-anim mix-blend-lighten" 
+            className="max-h-[80vh] w-auto max-w-[95vw] object-contain opacity-0 homun-anim mix-blend-lighten" 
             style={{ 
-              WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)', 
-              maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)' 
+              WebkitMaskImage: 'radial-gradient(circle at center, black 20%, transparent 75%)', 
+              maskImage: 'radial-gradient(circle at center, black 20%, transparent 75%)' 
             }}
           />
-          <div className="absolute inset-x-0 bottom-[10%] text-center opacity-0 homun-anim">
-            <h2 className="text-4xl md:text-6xl text-red-700 font-bold display-font tracking-[0.5em] blur-[2px] opacity-60">EL HOMUN SEES</h2>
+          <div className="absolute inset-x-0 bottom-[10%] text-center opacity-0 homun-anim flex justify-center w-full z-10">
+            <h2 className="text-4xl md:text-6xl text-red-700 font-bold display-font tracking-[0.5em] blur-[1px] opacity-80 mix-blend-screen text-shadow-lg">EL HOMUN SEES</h2>
           </div>
         </div>
       )}
