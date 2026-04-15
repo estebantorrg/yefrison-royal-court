@@ -293,8 +293,8 @@ export const AskYefris: React.FC = () => {
             alt="El Homun" 
             className="max-h-[80vh] w-auto max-w-[95vw] object-contain opacity-0 homun-anim mix-blend-lighten" 
             style={{ 
-              WebkitMaskImage: 'radial-gradient(circle at center, black 20%, transparent 75%)', 
-              maskImage: 'radial-gradient(circle at center, black 20%, transparent 75%)' 
+              WebkitMaskImage: 'radial-gradient(ellipse closest-side at center, black 20%, transparent 100%)', 
+              maskImage: 'radial-gradient(ellipse closest-side at center, black 20%, transparent 100%)' 
             }}
           />
           <div className="absolute inset-x-0 bottom-[10%] text-center opacity-0 homun-anim flex justify-center w-full z-10">
