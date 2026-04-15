@@ -33,3 +33,25 @@ h1, h2, h3, h4, h5, h6, .display-font {
   90% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* Easter Egg Themes */
+.theme-bloodmoon .bg-\[\#1F618D\] { background-color: #4A1212 !important; border-color: #8B0000 !important; }
+.theme-bloodmoon .text-\[\#F1C40F\] { color: #E74C3C !important; }
+.theme-bloodmoon .border-amber-300\/50, .theme-bloodmoon .border-amber-300\/80 { border-color: #E74C3C !important; }
+.theme-bloodmoon .bg-\[\#FDF2E9\] { background-color: #0d0202 !important; color: #E74C3C !important; box-shadow: 0 0 15px rgba(231,76,60,0.1) !important; }
+.theme-bloodmoon .text-\[\#D35400\] { color: #ff3333 !important; }
+.theme-bloodmoon .text-\[\#85C1E9\] { color: #E74C3C !important; }
+.theme-bloodmoon * { text-shadow: 0 0 4px rgba(255, 0, 0, 0.4); }
+
+.runic-curse * {
+  font-family: 'Wingdings', 'Webdings', 'Noto Sans Old Italic', cursive !important;
+}
+
+.void-elements {
+  transition: opacity 2.5s ease-in-out;
+}
+
+.void-active {
+  opacity: 0 !important;
+  pointer-events: none;
+}
