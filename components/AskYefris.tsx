@@ -288,7 +288,7 @@ export const AskYefris: React.FC = () => {
     <>
       {showHomun && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black homun-bg-fade pointer-events-none">
-          <img src="homun.jpg" alt="El Homun" className="max-w-full max-h-full w-full h-full object-cover opacity-0 homun-anim mix-blend-lighten" />
+          <img src="/homun.jpg" alt="El Homun" className="max-w-full max-h-full w-full h-full object-contain opacity-0 homun-anim mix-blend-lighten" />
           <div className="absolute inset-x-0 bottom-[10%] text-center opacity-0 homun-anim">
             <h2 className="text-4xl md:text-6xl text-red-700 font-bold display-font tracking-[0.5em] blur-[2px] opacity-60">EL HOMUN SEES</h2>
           </div>
@@ -318,7 +318,10 @@ export const AskYefris: React.FC = () => {
         `}>
             <div className="p-3 border-b border-white/10 hidden lg:block">
               <h2 className="text-2xl font-bold display-font text-[#F1C40F] drop-shadow-lg leading-none mb-1">Yefris</h2>
-              <p className="text-[9px] tracking-widest uppercase text-[#85C1E9]">The Oracle Log</p>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-[9px] tracking-widest uppercase text-[#85C1E9]">The Oracle Log</p>
+                <p className="text-[8px] text-gray-500 italic leading-tight">*History is stored locally and will not sync across devices.</p>
+              </div>
             </div>
 
             <div className="p-3">
