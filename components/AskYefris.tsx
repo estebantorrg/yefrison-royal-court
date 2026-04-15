@@ -25,8 +25,6 @@ export const AskYefris: React.FC = () => {
 
   const [showHomun, setShowHomun] = useState(false);
   const [isBloodMoon, setIsBloodMoon] = useState(false);
-  const [isRunic, setIsRunic] = useState(false);
-  const [isVoid, setIsVoid] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -194,20 +192,6 @@ export const AskYefris: React.FC = () => {
       return;
     }
 
-    if (normalizedQ === '/sigil') {
-      setQuestion('');
-      setIsRunic(true);
-      setTimeout(() => setIsRunic(false), 5000);
-      return;
-    }
-
-    if (normalizedQ === '/void') {
-      setQuestion('');
-      setIsVoid(true);
-      setTimeout(() => setIsVoid(false), 4000);
-      return;
-    }
-
     if (normalizedQ === '/homun' || normalizedQ === 'el homun in flesh') {
       setQuestion('');
       setShowHomun(true);
@@ -331,11 +315,11 @@ export const AskYefris: React.FC = () => {
         </div>
       )}
 
-      <section id="ask-yefris" className={`py-20 px-4 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isBloodMoon ? 'theme-bloodmoon' : ''} ${isRunic ? 'runic-curse' : ''}`}>
+      <section id="ask-yefris" className={`py-20 px-4 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isBloodMoon ? 'theme-bloodmoon' : ''}`}>
         <div className="max-w-6xl w-full bg-black/60 backdrop-blur-md text-[#F8F9FA] rounded-lg shadow-[0_0_50px_rgba(255,237,74,0.15)] border border-white/20 h-[85vh] min-h-[600px] flex overflow-hidden lg:flex-row flex-col">
 
           {/* Mobile Header Toggle */}
-          <div className={`lg:hidden p-4 border-b border-white/10 flex justify-between items-center bg-black/40 void-elements ${isVoid ? 'void-active' : ''}`}>
+          <div className="lg:hidden p-4 border-b border-white/10 flex justify-between items-center bg-black/40">
             <h2 className="text-2xl font-bold display-font text-[#F1C40F] drop-shadow-lg leading-none">The Oracle</h2>
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -351,7 +335,6 @@ export const AskYefris: React.FC = () => {
           ${isSidebarOpen ? 'flex' : 'hidden'} 
           lg:flex flex-col w-full lg:w-64 bg-black/80 border-r border-white/10 flex-shrink-0 z-20 
           lg:relative absolute top-[73px] lg:top-0 h-[calc(100%-73px)] lg:h-full lg:translate-x-0
-          void-elements ${isVoid ? 'void-active' : ''}
         `}>
             <div className="p-3 border-b border-white/10 hidden lg:block">
               <h2 className="text-2xl font-bold display-font text-[#F1C40F] drop-shadow-lg leading-none mb-1">Yefris</h2>
@@ -429,7 +412,7 @@ export const AskYefris: React.FC = () => {
         <div className="flex flex-col flex-grow w-full relative">
           
           {/* Chat Log Window */}
-          <div ref={chatContainerRef} className={`flex-grow overflow-y-auto p-4 lg:p-8 space-y-5 custom-scrollbar lg:bg-gradient-to-br from-transparent to-black/20 void-elements ${isVoid ? 'void-active' : ''}`}>
+          <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-4 lg:p-8 space-y-5 custom-scrollbar lg:bg-gradient-to-br from-transparent to-black/20">
               {(!activeSession || activeSession.messages.length === 0) ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-50 px-6">
                   <svg className="w-16 h-16 text-[#F1C40F] mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>

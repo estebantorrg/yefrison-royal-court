@@ -42,16 +42,3 @@ h1, h2, h3, h4, h5, h6, .display-font {
 .theme-bloodmoon .text-\[\#D35400\] { color: #ff3333 !important; }
 .theme-bloodmoon .text-\[\#85C1E9\] { color: #E74C3C !important; }
 .theme-bloodmoon * { text-shadow: 0 0 4px rgba(255, 0, 0, 0.4); }
-
-.runic-curse * {
-  font-family: 'Wingdings', 'Webdings', 'Noto Sans Old Italic', cursive !important;
-}
-
-.void-elements {
-  transition: opacity 2.5s ease-in-out;
-}
-
-.void-active {
-  opacity: 0 !important;
-  pointer-events: none;
-}
