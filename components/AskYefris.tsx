@@ -23,7 +23,6 @@ export const AskYefris: React.FC = () => {
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editTitleBuffer, setEditTitleBuffer] = useState('');
 
-  const [isGlitching, setIsGlitching] = useState(false);
   const [showHomun, setShowHomun] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -173,13 +172,6 @@ export const AskYefris: React.FC = () => {
 
     const normalizedQ = question.trim().toLowerCase();
 
-    if (normalizedQ === '/oblivion' || normalizedQ === 'embrace oblivion') {
-      setQuestion('');
-      setIsGlitching(true);
-      setTimeout(() => setIsGlitching(false), 2500);
-      return;
-    }
-
     if (normalizedQ === '/homun' || normalizedQ === 'el homun in flesh') {
       setQuestion('');
       setShowHomun(true);
@@ -303,7 +295,7 @@ export const AskYefris: React.FC = () => {
         </div>
       )}
 
-      <section id="ask-yefris" className={`py-20 px-4 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isGlitching ? 'glitch-effect' : ''}`}>
+      <section id="ask-yefris" className="py-20 px-4 bg-transparent text-white flex justify-center relative z-10 text-shadow-md">
         <div className="max-w-6xl w-full bg-black/60 backdrop-blur-md text-[#F8F9FA] rounded-lg shadow-[0_0_50px_rgba(255,237,74,0.15)] border border-white/20 h-[85vh] min-h-[600px] flex overflow-hidden lg:flex-row flex-col">
 
           {/* Mobile Header Toggle */}
