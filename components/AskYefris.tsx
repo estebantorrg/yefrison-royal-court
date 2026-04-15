@@ -288,7 +288,7 @@ export const AskYefris: React.FC = () => {
     <>
       {showHomun && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black homun-bg-fade pointer-events-none">
-          <img src="/homun.jpg" alt="El Homun" className="max-w-full max-h-full w-full h-full object-contain opacity-0 homun-anim mix-blend-lighten" />
+          <img src="/homun.webp" alt="El Homun" className="max-w-full max-h-full w-full h-full object-contain opacity-0 homun-anim mix-blend-lighten" />
           <div className="absolute inset-x-0 bottom-[10%] text-center opacity-0 homun-anim">
             <h2 className="text-4xl md:text-6xl text-red-700 font-bold display-font tracking-[0.5em] blur-[2px] opacity-60">EL HOMUN SEES</h2>
           </div>
