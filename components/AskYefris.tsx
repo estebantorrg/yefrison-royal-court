@@ -29,8 +29,8 @@ export const AskYefris: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Load history from local storage on mount
   useEffect(() => {
@@ -60,16 +60,14 @@ export const AskYefris: React.FC = () => {
   }, [sessions]);
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
-
-  const isInitialMount = useRef(true);
   
   useEffect(() => {
-    if (isInitialMount.current) {
-      // Don't scroll on the first load of the website
-      isInitialMount.current = false;
-      return;
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, error, loading]);
 
   const createNewSession = () => {
@@ -391,7 +389,7 @@ export const AskYefris: React.FC = () => {
           <div className="flex flex-col flex-grow w-full relative">
 
             {/* Chat Log Window */}
-            <div className="flex-grow overflow-y-auto p-4 lg:p-8 space-y-5 custom-scrollbar lg:bg-gradient-to-br from-transparent to-black/20">
+            <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-4 lg:p-8 space-y-5 custom-scrollbar lg:bg-gradient-to-br from-transparent to-black/20">
               {(!activeSession || activeSession.messages.length === 0) ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-50 px-6">
                   <svg className="w-16 h-16 text-[#F1C40F] mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -452,7 +450,6 @@ export const AskYefris: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div ref={chatEndRef} />
             </div>
 
             {/* Input Area */}
