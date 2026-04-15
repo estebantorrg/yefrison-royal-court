@@ -61,7 +61,14 @@ export const AskYefris: React.FC = () => {
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
 
+  const isInitialMount = useRef(true);
+  
   useEffect(() => {
+    if (isInitialMount.current) {
+      // Don't scroll on the first load of the website
+      isInitialMount.current = false;
+      return;
+    }
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, error, loading]);
 
