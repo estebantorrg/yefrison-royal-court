@@ -12,7 +12,8 @@ const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: st
 const App = () => {
   const [hasReachedVideo, setHasReachedVideo] = useState(false);
   const [scrollP, setScrollP] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ const App = () => {
 
   // Close mobile menu when clicking a link
   const handleLinkClick = () => {
-    setIsMenuOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   // A spotlight diffusing against a black wall from the bottom.
@@ -68,19 +69,47 @@ const App = () => {
   const textColor = '#F8F9FA';
   const headerColor = '#85C1E9';
 
-  return (
+    return (
     <div style={bgStyle} className="min-h-screen font-sans selection:bg-[#F1C40F] selection:text-black">
+      
+      {/* Floating Desktop Menu Button (visible only when desktop menu is CLOSED) */}
+      <div className={`hidden ${!isDesktopMenuOpen ? 'lg:flex' : ''} fixed top-6 left-6 z-[60]`}>
+        <button 
+          onClick={() => setIsDesktopMenuOpen(true)}
+          className="text-gray-300 hover:text-[#F1C40F] focus:outline-none p-3 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-md border border-white/20 shadow-xl transition-all"
+          title="Open Menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
       <div className="flex flex-col lg:flex-row relative">
         {/* SIDEBAR NAVBAR (Epsilon Style) */}
-        <nav className="lg:w-64 sticky top-0 lg:h-screen bg-black/80 lg:bg-black/60 border-b lg:border-b-0 lg:border-r border-white/10 backdrop-blur-md z-50 flex-shrink-0 w-full lg:overflow-y-auto shadow-[0_5px_15px_rgba(0,0,0,0.5)] lg:shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+        <nav className={`
+          ${isDesktopMenuOpen ? 'lg:flex' : 'lg:hidden'} flex-col
+          lg:w-64 sticky top-0 lg:h-screen bg-black/80 lg:bg-black/60 border-b lg:border-b-0 lg:border-r border-white/10 backdrop-blur-md z-50 flex-shrink-0 w-full lg:overflow-y-auto shadow-[0_5px_15px_rgba(0,0,0,0.5)] lg:shadow-[5px_0_15px_rgba(0,0,0,0.5)] transition-all
+        `}>
           <div className="flex items-center justify-between p-4 lg:p-6 lg:pb-6 border-b lg:border-white/20 border-transparent">
-            <div className="text-left lg:text-center w-full">
+            <div className="text-left flex justify-between items-center w-full lg:text-center">
               <h2 className="display-font text-2xl lg:text-3xl text-[#F1C40F] drop-shadow-md leading-none">Yefris</h2>
+              
+              {/* Desktop Close Button */}
+              <button 
+                className="hidden lg:block text-gray-500 hover:text-red-400 focus:outline-none p-1 transition-colors" 
+                onClick={() => setIsDesktopMenuOpen(false)}
+                title="Collapse Menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
             </div>
-            {/* Hamburger Button */}
-            <button className="lg:hidden text-white hover:text-[#F1C40F] focus:outline-none p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {/* Hamburger Button (Mobile Only) */}
+            <button className="lg:hidden text-white hover:text-[#F1C40F] focus:outline-none p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMenuOpen ? (
+                {isMobileMenuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                 ) : (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -89,7 +118,7 @@ const App = () => {
             </button>
           </div>
           
-          <ul className={`${isMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col gap-3 p-4 lg:p-6 bg-black/90 lg:bg-transparent absolute lg:static top-full left-0 w-full lg:w-auto shadow-xl lg:shadow-none border-b border-white/10 lg:border-none`}>
+          <ul className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col gap-3 p-4 lg:p-6 bg-black/90 lg:bg-transparent absolute lg:static top-full left-0 w-full lg:w-auto shadow-xl lg:shadow-none border-b border-white/10 lg:border-none`}>
             <li><a onClick={handleLinkClick} href="#intro" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Intro</a></li>
             <li><a onClick={handleLinkClick} href="#cult" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Cult</a></li>
             <li><a onClick={handleLinkClick} href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
