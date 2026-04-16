@@ -31,3 +31,12 @@ This project was a masterclass in the real-world software lifecycle.
 2. **The React Migration:** As "The Oracle" grew from a simple text box into a multi-threaded chat client with local storage parsing, renaming buffers, and API state tracking, the Vanilla Javascript became unmanageable. The entire architecture was ripped out and re-built from scratch using React and TypeScript.
 3. **Overcoming Deployment Hurdles:** Early versions failed to deploy due to complex serverless functions attempting to hide API keys on basic tier hosts. The solution was migrating the CI/CD pipeline exclusively to Cloudflare Pages, taking advantage of edge networking for lightning-fast site delivery.
 4. **The Final Polish:** Implementing TailwindCSS, dynamic intersection observers for YouTube autoplay, and adding seamless CSS mask-image fades to polish the UI into a fully professional web app. 
+
+## Oracle Error Index
+
+| Ritual Result Message | Translation / Meaning |
+|---|---|
+| *"yefris went to take a break. come back later."* | The free-tier Gemini API daily limit has been reached. Try again tomorrow. |
+| *"yefris cannot authenticate. the API key may be invalid or missing."* | The `VITE_GEMINI_API_KEY` is either missing from the Cloudflare environment variables or has been revoked. |
+| *"something went wrong on yefris' end. try again in a moment."* | An unexpected server/Gemini error occurred. |
+| *"yefris went for a walk. he cannot be reached at this time."* | The frontend could not reach the Cloudflare Edge network (local network disconnected or CF Pages went down). |
