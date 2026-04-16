@@ -361,7 +361,7 @@ export const AskYefris: React.FC = () => {
           {/* Sidebar (History List) */}
         <div className={`
           ${isSidebarOpen ? 'flex' : 'hidden'} 
-          lg:flex flex-col w-full lg:w-64 bg-black/80 border-r border-white/10 flex-shrink-0 z-20 
+          flex-col w-full lg:w-64 bg-black/80 border-r border-white/10 flex-shrink-0 z-20 
           lg:relative absolute top-[73px] lg:top-0 h-[calc(100%-73px)] lg:h-full lg:translate-x-0
         `}>
             <div className="p-3 border-b border-white/10 hidden lg:block">
@@ -439,8 +439,19 @@ export const AskYefris: React.FC = () => {
           {/* Main Chat Area */}
         <div className="flex flex-col flex-grow w-full relative">
           
+          {/* Desktop Sidebar Toggle */}
+          <div className="hidden lg:flex absolute top-4 left-4 z-10">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="text-gray-400 hover:text-[#F1C40F] focus:outline-none p-1.5 bg-black/40 border border-white/10 hover:border-[#F1C40F]/50 rounded-md transition-colors backdrop-blur-sm"
+              title="Toggle Menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+          </div>
+
           {/* Chat Log Window */}
-          <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-4 lg:p-8 space-y-5 custom-scrollbar lg:bg-gradient-to-br from-transparent to-black/20">
+          <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-4 lg:p-8 pt-12 lg:pt-12 space-y-5 custom-scrollbar lg:bg-gradient-to-br from-transparent to-black/20">
               {(!activeSession || activeSession.messages.length === 0) ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-50 px-6">
                   <svg className="w-16 h-16 text-[#F1C40F] mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
