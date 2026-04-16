@@ -35,21 +35,49 @@ export const AskYefris: React.FC = () => {
   // Load history from local storage on mount
   useEffect(() => {
     const saved = localStorage.getItem('yefris_chat_sessions');
+    let loadedSessions: ChatSession[] = [];
+    
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          setSessions(parsed);
-          if (parsed.length > 0) {
-            const sorted = parsed.sort((a, b) => b.updatedAt - a.updatedAt);
-            setActiveSessionId(sorted[0].id);
-          }
+          loadedSessions = parsed;
         }
       } catch (e) {
         console.error("Failed to parse chat sessions");
       }
+    }
+
+    if (loadedSessions.length > 0) {
+      // Find if we already have an empty session to avoid spamming them
+      const emptySession = loadedSessions.find(s => s.messages.length === 0);
+      
+      if (emptySession) {
+        setSessions(loadedSessions);
+        setActiveSessionId(emptySession.id);
+      } else {
+        // Create a new session on top of the loaded history
+        const tempId = Date.now().toString();
+        setSessions([{
+          id: tempId,
+          title: 'New Divination',
+          messages: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }, ...loadedSessions]);
+        setActiveSessionId(tempId);
+      }
     } else {
-      createNewSession();
+      // No history at all, just create a fresh one
+      const tempId = Date.now().toString();
+      setSessions([{
+        id: tempId,
+        title: 'New Divination',
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      }]);
+      setActiveSessionId(tempId);
     }
   }, []);
 
