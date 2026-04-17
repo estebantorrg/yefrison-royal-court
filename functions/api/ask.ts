@@ -28,7 +28,7 @@ export const onRequestPost = async (context: any) => {
 
     // Pollinations REST API request payload
     const payload = {
-      model: "openai",
+      model: "gemini",
       messages: [
         { role: "system", content: systemInstruction },
         ...mappedHistory,
