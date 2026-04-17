@@ -28,7 +28,7 @@ export const onRequestPost = async (context: any) => {
 
     // Pollinations REST API request payload
     const payload = {
-      model: "gemini",
+      model: "grok",
       messages: [
         { role: "system", content: systemInstruction },
         ...mappedHistory,
@@ -46,7 +46,7 @@ export const onRequestPost = async (context: any) => {
     });
 
     if (!pollinationsRequest.ok) {
-        throw { status: pollinationsRequest.status, message: await pollinationsRequest.text() };
+      throw { status: pollinationsRequest.status, message: await pollinationsRequest.text() };
     }
 
     const result = await pollinationsRequest.json();
@@ -58,7 +58,7 @@ export const onRequestPost = async (context: any) => {
     });
   } catch (error: any) {
     console.error("Pollinations API Error:", error);
-    
+
     const msg = error?.message || '';
     const status = error?.status || error?.httpStatusCode || 0;
 
@@ -85,8 +85,8 @@ export const onRequestPost = async (context: any) => {
     }
 
     return new Response(JSON.stringify({ error: "something went wrong on yefris' end. try again in a moment." }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+      status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
