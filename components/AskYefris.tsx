@@ -571,6 +571,11 @@ export const AskYefris: React.FC = () => {
                 </div>
               ) : (
                 activeSession.messages.map((msg, index) => {
+                  // Do not render empty Yefris bubbles that act as a placeholder for streaming
+                  if (msg.role === 'yefris' && !msg.text.trim()) {
+                    return null;
+                  }
+
                   const isLastUserMessage = msg.role === 'user' && index === activeSession.messages.length - 1;
                   const isErrorOnLastMessage = isLastUserMessage && error !== '';
 
@@ -594,9 +599,9 @@ export const AskYefris: React.FC = () => {
                             } ${isErrorOnLastMessage ? 'border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                         >
                           {msg.role === 'yefris' && <h3 className="text-xs tracking-wider uppercase font-bold mb-2 text-[#D35400] opacity-80 border-b border-[#D35400]/20 pb-1 inline-block">Yefris Answers</h3>}
-                          <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
+                          <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text.trimStart()}</p>
                           
-                          {/* Grounding / Deep Sight Metadata */}
+                          {/* Grounding / Homun Sources Metadata */}
                           {msg.meta && msg.meta.groundingStatus === "success" && msg.meta.sources.length > 0 && (
                             <div className="mt-4 pt-3 border-t border-[#D35400]/10">
                               <div className="flex items-center gap-1.5 mb-2 text-[#D35400] text-[10px] font-bold uppercase tracking-widest opacity-70">
@@ -604,7 +609,7 @@ export const AskYefris: React.FC = () => {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-                                <span>Deep Sight Sources</span>
+                                <span>Homun Sources</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {msg.meta.sources.map((source, idx) => (
