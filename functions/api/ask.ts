@@ -24,23 +24,34 @@ export const onRequestPost = async (context: any) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemma-4-31b-it",
-      systemInstruction: systemInstruction,
-      tools: [
-        {
-          //@ts-ignore - Grounding with Google Search
-          googleSearchRetrieval: {},
-        },
-      ],
-    });
+    
+    // Function to get a response, with or without tools
+    const getYefrisResponse = async (useGrounding: boolean) => {
+      const modelConfig: any = {
+        model: "gemma-4-31b-it",
+        systemInstruction: systemInstruction,
+      };
 
-    const chat = model.startChat({
-      history: history || [],
-    });
+      if (useGrounding) {
+        modelConfig.tools = [{ googleSearchRetrieval: {} }];
+      }
 
-    const result = await chat.sendMessage(question);
-    const response = await result.response;
+      const model = genAI.getGenerativeModel(modelConfig);
+      const chat = model.startChat({ history: history || [] });
+      const result = await chat.sendMessage(question);
+      return await result.response;
+    };
+
+    let response;
+    try {
+      // Primary attempt: Grounding with Google Search
+      response = await getYefrisResponse(true);
+    } catch (groundingError: any) {
+      console.warn("Grounding failed, falling back to standard model:", groundingError);
+      // Fallback attempt: Standard generation (without grounding)
+      // We do this if the first attempt fails due to quota (429) or tool incompatibility
+      response = await getYefrisResponse(false);
+    }
 
     // Filter out "thought" parts — Gemma reasoning models output their chain-of-thought
     // as separate parts with thought: true. We only want the final answer text.
