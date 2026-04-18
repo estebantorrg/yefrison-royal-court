@@ -48,19 +48,24 @@ export const AskYefris: React.FC = () => {
       return;
     }
 
-    let phraseIndex = 0;
+    let phraseIndex = Math.floor(Math.random() * loadingPhrases.length);
     let charIndex = 0;
     let pausing = false;
     let cancelled = false;
+
+    const pickRandom = () => {
+      let next;
+      do { next = Math.floor(Math.random() * loadingPhrases.length); } while (next === phraseIndex && loadingPhrases.length > 1);
+      return next;
+    };
 
     const tick = () => {
       if (cancelled) return;
       const phrase = loadingPhrases[phraseIndex];
 
       if (pausing) {
-        // 1-second pause between phrases
         pausing = false;
-        phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
+        phraseIndex = pickRandom();
         charIndex = 0;
         setLoadingText('');
         setTimeout(tick, 50);
@@ -72,9 +77,9 @@ export const AskYefris: React.FC = () => {
         charIndex++;
         setTimeout(tick, 45);
       } else {
-        // Phrase fully typed — pause for 1 second
+        // 3-second pause between phrases
         pausing = true;
-        setTimeout(tick, 1000);
+        setTimeout(tick, 3000);
       }
     };
 
@@ -558,7 +563,7 @@ export const AskYefris: React.FC = () => {
                 <div className="flex flex-col items-start">
                   <div className="max-w-[85%] p-4 rounded-2xl bg-[#FDF2E9]/70 border border-amber-300/50 text-gray-900 rounded-bl-sm flex items-center shadow-[0_0_15px_rgba(241,196,15,0.1)]">
                     <LoadingSpinner className="mr-3 text-[#D35400] h-5 w-5" />
-                    <span className="italic font-medium text-gray-700">{loadingText}<span className="animate-pulse">|</span></span>
+                    <span className="italic font-medium text-gray-700">{loadingText}<span style={{ animation: 'blink 0.7s step-end infinite' }}>|</span></span>
                   </div>
                 </div>
               )}
