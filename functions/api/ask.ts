@@ -51,80 +51,57 @@ export const onRequestPost = async (context: any) => {
       await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
     };
 
-    // Process stream asynchronously to avoid blocking the initial 200 OK response
+    // Process request synchronously to guarantee grounding metadata extraction
     (async () => {
       try {
-        let stream;
+        const getYefrisResponse = async (useTools: boolean) => {
+          const contentsPayload = [
+            ...(history || []),
+            { role: "user", parts: [{ text: question }] }
+          ];
+
+          return await ai.models.generateContent({
+            model: "gemma-4-26b-a4b-it",
+            contents: contentsPayload,
+            config: {
+              systemInstruction: systemInstruction,
+              tools: useTools ? [{ googleSearch: {} }] : [],
+            }
+          });
+        };
+
+        let response;
         let groundingStatus = "not_attempted";
         let sources: any[] = [];
-        let chunkDebug: any[] = [];
 
         try {
-          stream = await getYefrisResponseStream(true);
+          response = await getYefrisResponse(true);
           groundingStatus = "success";
         } catch (groundingError: any) {
-          console.warn("Grounding stream failed, falling back:", groundingError);
+          console.warn("Grounding failed, falling back:", groundingError);
           groundingStatus = `failed: ${groundingError?.message || 'unknown error'}`;
-          stream = await getYefrisResponseStream(false);
+          response = await getYefrisResponse(false);
         }
 
-        let buffer = "";
-        let isThinking = false;
-        let checkThinkStarted = false;
+        let rawText = response.text || "";
+        
+        // Safely strip hidden think blocks
+        let cleanText = rawText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
-        for await (const chunk of stream) {
-          if (!chunk.text) continue;
-          buffer += chunk.text;
-
-          if (!checkThinkStarted) {
-            if (buffer.includes("<think>")) {
-              isThinking = true;
-              checkThinkStarted = true;
-            } else if (buffer.length > 10 && !buffer.includes("<")) {
-              checkThinkStarted = true;
-            }
-          }
-
-          if (isThinking) {
-            if (buffer.includes("</think>")) {
-              isThinking = false;
-              buffer = buffer.substring(buffer.indexOf("</think>") + 8);
-              if (buffer) {
-                await writeSSE({ type: "content", text: buffer });
-                buffer = "";
-              }
-            }
-          } else if (checkThinkStarted) {
-            if (buffer) {
-              await writeSSE({ type: "content", text: buffer });
-              buffer = "";
-            }
-          }
-          
-          // Extract sources dynamically using a deep search in case the streaming schema hides it
-          const findGroundingChunks = (obj: any): any[] | null => {
-            if (!obj || typeof obj !== 'object') return null;
-            if (obj.groundingChunks && Array.isArray(obj.groundingChunks)) return obj.groundingChunks;
-            for (const key of Object.keys(obj)) {
-              const res = findGroundingChunks(obj[key]);
-              if (res) return res;
-            }
-            return null;
-          };
-
-          const chunkSources = findGroundingChunks(chunk);
-          if (chunkSources) {
-            sources = chunkSources
-              .filter((c: any) => c.web)
-              .map((c: any) => ({
-                title: c.web.title,
-                uri: c.web.uri
-              }));
-          }
+        // Extract native sources natively since we used the blocking API!
+        const chunkSources = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        if (chunkSources) {
+          sources = chunkSources
+            .filter((c: any) => c.web)
+            .map((c: any) => ({
+              title: c.web.title,
+              uri: c.web.uri
+            }));
         }
 
-        if (buffer && !isThinking) {
-          await writeSSE({ type: "content", text: buffer });
+        // Send the single text packet (frontend will type it out)
+        if (cleanText) {
+          await writeSSE({ type: "content", text: cleanText });
         }
 
         // Send final metadata
