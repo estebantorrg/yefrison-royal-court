@@ -24,7 +24,7 @@ export const onRequestPost = async (context: any) => {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
+      model: "gemma-4-31b-it",
       systemInstruction: systemInstruction
     });
 
