@@ -26,7 +26,13 @@ export const onRequestPost = async (context: any) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemma-4-31b-it",
-      systemInstruction: systemInstruction
+      systemInstruction: systemInstruction,
+      tools: [
+        {
+          //@ts-ignore - Grounding with Google Search
+          googleSearchRetrieval: {},
+        },
+      ],
     });
 
     const chat = model.startChat({
