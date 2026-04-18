@@ -56,7 +56,16 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
           
           try {
             const data: StreamUpdate = JSON.parse(dataStr);
-            yield data;
+            
+            if (data.type === 'content' && data.text) {
+              const chars = Array.from(data.text);
+              for (const char of chars) {
+                yield { type: 'content', text: char };
+                await new Promise(resolve => setTimeout(resolve, 8)); // 8ms delay looks dynamic and natural
+              }
+            } else {
+              yield data;
+            }
           } catch (e) {
             console.error("Failed to parse SSE JSON:", dataStr);
           }

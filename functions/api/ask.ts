@@ -101,16 +101,18 @@ export const onRequestPost = async (context: any) => {
             }
           }
           
-          chunkDebug.push(Object.keys(chunk));
-          if (chunk.candidates?.[0]) {
-             chunkDebug.push(Object.keys(chunk.candidates[0]));
-             if (chunk.candidates[0].groundingMetadata) {
-                chunkDebug.push("FOUND_GROUNDING_METADATA", chunk.candidates[0].groundingMetadata);
-             }
-          }
+          // Extract sources dynamically using a deep search in case the streaming schema hides it
+          const findGroundingChunks = (obj: any): any[] | null => {
+            if (!obj || typeof obj !== 'object') return null;
+            if (obj.groundingChunks && Array.isArray(obj.groundingChunks)) return obj.groundingChunks;
+            for (const key of Object.keys(obj)) {
+              const res = findGroundingChunks(obj[key]);
+              if (res) return res;
+            }
+            return null;
+          };
 
-          // Extract sources dynamically as they arrive (usually in the final chunk)
-          const chunkSources = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
+          const chunkSources = findGroundingChunks(chunk);
           if (chunkSources) {
             sources = chunkSources
               .filter((c: any) => c.web)
@@ -128,7 +130,7 @@ export const onRequestPost = async (context: any) => {
         // Send final metadata
         await writeSSE({
           type: "metadata",
-          _oracle_meta: { groundingStatus, sources, chunkDebug }
+          _oracle_meta: { groundingStatus, sources }
         });
 
         // Close stream
