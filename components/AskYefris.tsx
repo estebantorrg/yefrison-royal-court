@@ -550,28 +550,32 @@ export const AskYefris: React.FC = () => {
                           <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
                           
                           {/* Grounding / Deep Sight Metadata */}
-                          {msg.meta && msg.meta.groundingStatus === "success" && msg.meta.sources.length > 0 && (
+                          {msg.meta && msg.meta.groundingStatus === "success" && (
                             <div className="mt-4 pt-3 border-t border-[#D35400]/10">
                               <div className="flex items-center gap-1.5 mb-2 text-[#D35400] text-[10px] font-bold uppercase tracking-widest opacity-70">
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-                                <span>Deep Sight Sources</span>
+                                <span>Deep Sight {msg.meta.sources.length > 0 ? "Sources" : "Active"}</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {msg.meta.sources.map((source, idx) => (
-                                  <a 
-                                    key={idx}
-                                    href={source.uri}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-[#D35400]/5 hover:bg-[#D35400]/10 border border-[#D35400]/20 px-2 py-1 rounded text-[10px] text-[#D35400] transition-colors truncate max-w-[200px]"
-                                    title={source.title}
-                                  >
-                                    {source.title || 'Source'}
-                                  </a>
-                                ))}
+                                {msg.meta.sources.length > 0 ? (
+                                  msg.meta.sources.map((source, idx) => (
+                                    <a 
+                                      key={idx}
+                                      href={source.uri}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="bg-[#D35400]/5 hover:bg-[#D35400]/10 border border-[#D35400]/20 px-2 py-1 rounded text-[10px] text-[#D35400] transition-colors truncate max-w-[200px]"
+                                      title={source.title}
+                                    >
+                                      {source.title || 'Source'}
+                                    </a>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-[#D35400]/60 italic font-medium">✨ relying on inner oblivious wisdom ✨</span>
+                                )}
                               </div>
                             </div>
                           )}
