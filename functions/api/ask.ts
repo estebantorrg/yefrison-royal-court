@@ -35,7 +35,18 @@ export const onRequestPost = async (context: any) => {
     const result = await chat.sendMessage(question);
     const response = await result.response;
 
-    return new Response(JSON.stringify({ answer: response.text() }), {
+    // Filter out "thought" parts — Gemma reasoning models output their chain-of-thought
+    // as separate parts with thought: true. We only want the final answer text.
+    const parts = response.candidates?.[0]?.content?.parts ?? [];
+    const answerText = parts
+      .filter((p: any) => !p.thought)
+      .map((p: any) => p.text ?? '')
+      .join('')
+      // Fallback: strip any raw <think>...</think> blocks just in case
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .trim() || response.text();
+
+    return new Response(JSON.stringify({ answer: answerText }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
