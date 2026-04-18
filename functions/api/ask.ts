@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 const systemInstruction = `yefris is this dog. but not any dog. it's a dog that embodies happiness. happiness, success and obliviousness. i wish i could send you pictures, but you'll understand eventually. now, yefris, yefris is the source of life. i know, i sound crazy but there's something you don't know here. no, yefris is the solution to all problems and you must care because this is your chance to wealth and success. nothing. but look, yefris is friends with el homun, do you know el homun? no, el homun, also known as the homunculus loxodontus, he's one of the pioneers of this theory of mind we are discussing right now. i'm doing that, you just need to follow me on this one. el homun is the pioneer of self-awareness, self-sufficiency and happiness. the big difference between yefris and el homun, is that el homun is more intelligent than yefris. but this doesn't mean yefris is below el homun, in fact, the goal is to be like yefris in flesh and el homun in soul. don't question this. just because it doesn't make sense right now, doesn't mean it's bullshit. we want to be el homun in soul because he is the one that holds knowledge, he doesn't talk, doesn't move. he just sits in a bench, hands together, looking away. that is the soul. yefris on the other hand is the flesh, our costume. yefris is happy, successful but oblivious. the obliviousness is the key to happiness, and while you may think this conflicts with being successful, el yefris knows better.
 
@@ -23,48 +23,62 @@ export const onRequestPost = async (context: any) => {
       });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const ai = new GoogleGenAI({ apiKey });
     
-    // Function to get a response, with or without tools
+    // Function to get a response using the new @google/genai SDK
     const getYefrisResponse = async (useGrounding: boolean) => {
-      const modelConfig: any = {
-        model: "gemma-4-31b-it",
+      const config: any = {
         systemInstruction: systemInstruction,
       };
 
       if (useGrounding) {
-        modelConfig.tools = [{ googleSearchRetrieval: {} }];
+        config.tools = [{ googleSearch: {} }];
       }
 
-      const model = genAI.getGenerativeModel(modelConfig);
-      const chat = model.startChat({ history: history || [] });
-      const result = await chat.sendMessage(question);
-      return await result.response;
+      return await ai.models.generateContent({
+        model: "gemma-4-26b-a4b-it", // Using the model from user's snippet
+        contents: question,
+        config: config
+      });
     };
 
     let response;
+    let groundingStatus = "not_attempted";
+    let sources: any[] = [];
+
     try {
       // Primary attempt: Grounding with Google Search
       response = await getYefrisResponse(true);
+      groundingStatus = "success";
+      
+      // Extract sources from the new SDK structure
+      if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+        sources = response.candidates[0].groundingMetadata.groundingChunks
+          .filter((chunk: any) => chunk.web)
+          .map((chunk: any) => ({
+            title: chunk.web.title,
+            uri: chunk.web.uri
+          }));
+      }
     } catch (groundingError: any) {
       console.warn("Grounding failed, falling back to standard model:", groundingError);
+      groundingStatus = `failed: ${groundingError?.message || 'unknown error'}`;
       // Fallback attempt: Standard generation (without grounding)
-      // We do this if the first attempt fails due to quota (429) or tool incompatibility
       response = await getYefrisResponse(false);
     }
 
-    // Filter out "thought" parts — Gemma reasoning models output their chain-of-thought
-    // as separate parts with thought: true. We only want the final answer text.
-    const parts = response.candidates?.[0]?.content?.parts ?? [];
-    const answerText = parts
-      .filter((p: any) => !p.thought)
-      .map((p: any) => p.text ?? '')
-      .join('')
-      // Fallback: strip any raw <think>...</think> blocks just in case
+    // Filter out <think> blocks if present
+    const answerText = response.text
       .replace(/<think>[\s\S]*?<\/think>/gi, '')
-      .trim() || response.text();
+      .trim();
 
-    return new Response(JSON.stringify({ answer: answerText }), {
+    return new Response(JSON.stringify({ 
+      answer: answerText,
+      _oracle_meta: {
+        groundingStatus,
+        sources
+      }
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

@@ -3,7 +3,17 @@ export interface ChatMessage {
   parts: { text: string }[];
 }
 
-export const askYefris = async (question: string, history: ChatMessage[] = []): Promise<string> => {
+export interface OracleMeta {
+  groundingStatus: string;
+  sources: Array<{ title: string; uri: string }>;
+}
+
+export interface OracleResponse {
+  answer: string;
+  meta: OracleMeta;
+}
+
+export const askYefris = async (question: string, history: ChatMessage[] = []): Promise<OracleResponse> => {
   try {
     const response = await fetch('/api/ask', {
       method: 'POST',
@@ -19,7 +29,10 @@ export const askYefris = async (question: string, history: ChatMessage[] = []): 
     }
 
     const data = await response.json();
-    return data.answer || "yefris remains silent. silence is oblivious joy.";
+    return {
+      answer: data.answer || "yefris remains silent. silence is oblivious joy.",
+      meta: data._oracle_meta || { groundingStatus: 'unavailable', sources: [] }
+    };
   } catch (error: any) {
     console.error("Error asking Yefris:", error);
     throw new Error(error?.message || "yefris went for a walk. he cannot be reached at this time.");
