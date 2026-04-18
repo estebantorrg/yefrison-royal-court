@@ -26,8 +26,7 @@ export const onRequestPost = async (context: any) => {
 
     const ai = new GoogleGenAI({ apiKey });
     
-    // Function to get a response using the new @google/genai SDK
-    const getYefrisResponse = async (useGrounding: boolean) => {
+    const getYefrisResponseStream = async (useGrounding: boolean) => {
       const config: any = {
         systemInstruction: systemInstruction,
       };
@@ -36,52 +35,109 @@ export const onRequestPost = async (context: any) => {
         config.tools = [{ googleSearch: {} }];
       }
 
-      return await ai.models.generateContent({
-        model: "gemma-4-26b-a4b-it", // Using the model from user's snippet
+      return await ai.models.generateContentStream({
+        model: "gemma-4-26b-a4b-it",
         contents: question,
         config: config
       });
     };
 
-    let response;
-    let groundingStatus = "not_attempted";
-    let sources: any[] = [];
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    const encoder = new TextEncoder();
 
-    try {
-      // Primary attempt: Grounding with Google Search
-      response = await getYefrisResponse(true);
-      groundingStatus = "success";
-      
-      // Extract sources from the new SDK structure
-      if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
-        sources = response.candidates[0].groundingMetadata.groundingChunks
-          .filter((chunk: any) => chunk.web)
-          .map((chunk: any) => ({
-            title: chunk.web.title,
-            uri: chunk.web.uri
-          }));
+    const writeSSE = async (data: any) => {
+      await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+    };
+
+    // Process stream asynchronously to avoid blocking the initial 200 OK response
+    (async () => {
+      try {
+        let stream;
+        let groundingStatus = "not_attempted";
+        let sources: any[] = [];
+
+        try {
+          stream = await getYefrisResponseStream(true);
+          groundingStatus = "success";
+        } catch (groundingError: any) {
+          console.warn("Grounding stream failed, falling back:", groundingError);
+          groundingStatus = `failed: ${groundingError?.message || 'unknown error'}`;
+          stream = await getYefrisResponseStream(false);
+        }
+
+        let buffer = "";
+        let isThinking = false;
+        let checkThinkStarted = false;
+
+        for await (const chunk of stream) {
+          if (!chunk.text) continue;
+          buffer += chunk.text;
+
+          if (!checkThinkStarted) {
+            if (buffer.includes("<think>")) {
+              isThinking = true;
+              checkThinkStarted = true;
+            } else if (buffer.length > 10 && !buffer.includes("<")) {
+              checkThinkStarted = true;
+            }
+          }
+
+          if (isThinking) {
+            if (buffer.includes("</think>")) {
+              isThinking = false;
+              buffer = buffer.substring(buffer.indexOf("</think>") + 8);
+              if (buffer) {
+                await writeSSE({ type: "content", text: buffer });
+                buffer = "";
+              }
+            }
+          } else if (checkThinkStarted) {
+            if (buffer) {
+              await writeSSE({ type: "content", text: buffer });
+              buffer = "";
+            }
+          }
+          
+          // Extract sources dynamically as they arrive (usually in the final chunk)
+          const chunkSources = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
+          if (chunkSources) {
+            sources = chunkSources
+              .filter((c: any) => c.web)
+              .map((c: any) => ({
+                title: c.web.title,
+                uri: c.web.uri
+              }));
+          }
+        }
+
+        if (buffer && !isThinking) {
+          await writeSSE({ type: "content", text: buffer });
+        }
+
+        // Send final metadata
+        await writeSSE({
+          type: "metadata",
+          _oracle_meta: { groundingStatus, sources }
+        });
+
+        // Close stream
+        await writer.write(encoder.encode("data: [DONE]\n\n"));
+        await writer.close();
+      } catch (err: any) {
+        console.error("Stream processing error:", err);
+        await writeSSE({ type: "error", error: "yefris lost his train of thought." });
+        await writer.close();
       }
-    } catch (groundingError: any) {
-      console.warn("Grounding failed, falling back to standard model:", groundingError);
-      groundingStatus = `failed: ${groundingError?.message || 'unknown error'}`;
-      // Fallback attempt: Standard generation (without grounding)
-      response = await getYefrisResponse(false);
-    }
+    })();
 
-    // Filter out <think> blocks if present
-    const answerText = response.text
-      .replace(/<think>[\s\S]*?<\/think>/gi, '')
-      .trim();
-
-    return new Response(JSON.stringify({ 
-      answer: answerText,
-      _oracle_meta: {
-        groundingStatus,
-        sources
-      }
-    }), {
+    return new Response(readable, {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+      },
     });
   } catch (error: any) {
     console.error("Gemini API Error:", error);

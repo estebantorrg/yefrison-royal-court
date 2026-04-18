@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { askYefris, ChatMessage } from '../services/geminiService';
+import { askYefrisStream, ChatMessage } from '../services/geminiService';
 import { LoadingSpinner } from './LoadingSpinner';
 
 export interface DisplayMessage {
@@ -217,14 +217,14 @@ export const AskYefris: React.FC = () => {
   const handleApiConnection = async (questionText: string, isRetry: boolean = false) => {
     if (!activeSessionId) return;
     setError('');
+    
+    // We keep loading true while the oracle is thinking
     setLoading(true);
 
     try {
       const currentSessionDetails = sessions.find(s => s.id === activeSessionId);
       let pastMessagesForPayload = currentSessionDetails ? currentSessionDetails.messages : [];
 
-      // If this is a retry, the last message in the array IS the question we are asking, 
-      // so it shouldn't be inside the historical payload context.
       if (isRetry && pastMessagesForPayload.length > 0) {
         pastMessagesForPayload = pastMessagesForPayload.slice(0, -1);
       }
@@ -234,31 +234,78 @@ export const AskYefris: React.FC = () => {
         parts: [{ text: m.text }]
       }));
 
-      const response = await askYefris(questionText, historyPayload);
+      // Create a placeholder message in state immediately
+      const newMsgId = (Date.now() + 1).toString();
       
-      const yefrisMsg: DisplayMessage = { 
-        id: (Date.now() + 1).toString(), 
-        role: 'yefris', 
-        text: response.answer,
-        meta: response.meta
-      };
-
       setSessions(prev => prev.map(session => {
         if (session.id === activeSessionId) {
           return {
             ...session,
             updatedAt: Date.now(),
-            messages: [...session.messages, yefrisMsg]
+            messages: [...session.messages, { id: newMsgId, role: 'yefris', text: '' }]
           };
         }
         return session;
       }));
+
+      let isFirstChunk = true;
+      let finalMeta: any = undefined;
+
+      // Start streaming
+      for await (const update of askYefrisStream(questionText, historyPayload)) {
+        if (isFirstChunk) {
+          // As soon as first text or meta arrives, we turn off the generic loading spinner
+          setLoading(false);
+          isFirstChunk = false;
+        }
+
+        if (update.type === 'error') {
+          throw new Error(update.error);
+        } else if (update.type === 'metadata') {
+          finalMeta = update._oracle_meta;
+          // Apply metadata
+          setSessions(prev => prev.map(session => {
+            if (session.id === activeSessionId) {
+              const msgs = [...session.messages];
+              const mIdx = msgs.findIndex(m => m.id === newMsgId);
+              if (mIdx !== -1) {
+                msgs[mIdx] = { ...msgs[mIdx], meta: update._oracle_meta };
+              }
+              return { ...session, messages: msgs };
+            }
+            return session;
+          }));
+        } else if (update.type === 'content') {
+          // Append text chunk
+          setSessions(prev => prev.map(session => {
+            if (session.id === activeSessionId) {
+              const msgs = [...session.messages];
+              const mIdx = msgs.findIndex(m => m.id === newMsgId);
+              if (mIdx !== -1) {
+                msgs[mIdx] = { ...msgs[mIdx], text: msgs[mIdx].text + update.text };
+              }
+              return { ...session, messages: msgs };
+            }
+            return session;
+          }));
+        }
+      }
+
     } catch (err: any) {
-      setError(err.message || 'The connection to yefris failed.');
+      console.error(err);
+      setError(err.message || 'yefris went to take a break. come back later.');
+      // remove the partial empty message if it failed before starting
+      setSessions(prev => prev.map(session => {
+        if (session.id === activeSessionId) {
+          const msgs = session.messages.filter(m => m.text !== ''); // clean up empty placeholder
+          return { ...session, messages: msgs };
+        }
+        return session;
+      }));
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const submitQuestion = async () => {
     if (!question.trim() || !activeSessionId) return;

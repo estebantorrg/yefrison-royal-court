@@ -8,12 +8,12 @@ export interface OracleMeta {
   sources: Array<{ title: string; uri: string }>;
 }
 
-export interface OracleResponse {
-  answer: string;
-  meta: OracleMeta;
-}
+export type StreamUpdate = 
+  | { type: 'content', text: string }
+  | { type: 'metadata', _oracle_meta: OracleMeta }
+  | { type: 'error', error: string };
 
-export const askYefris = async (question: string, history: ChatMessage[] = []): Promise<OracleResponse> => {
+export async function* askYefrisStream(question: string, history: ChatMessage[] = []): AsyncGenerator<StreamUpdate, void, unknown> {
   try {
     const response = await fetch('/api/ask', {
       method: 'POST',
@@ -24,17 +24,47 @@ export const askYefris = async (question: string, history: ChatMessage[] = []): 
     });
 
     if (!response.ok) {
-      const errData = await response.json().catch(() => null);
-      throw new Error(errData?.error || `HTTP error! status: ${response.status}`);
+      if (response.status === 429) {
+        yield { type: 'error', error: "yefris went to take a break. come back later." };
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return {
-      answer: data.answer || "yefris remains silent. silence is oblivious joy.",
-      meta: data._oracle_meta || { groundingStatus: 'unavailable', sources: [] }
-    };
+    if (!response.body) throw new Error("No response body");
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n\n');
+      
+      // Keep the last partial event in the buffer
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const dataStr = line.replace('data: ', '').trim();
+          if (dataStr === '[DONE]') {
+            return;
+          }
+          
+          try {
+            const data: StreamUpdate = JSON.parse(dataStr);
+            yield data;
+          } catch (e) {
+            console.error("Failed to parse SSE JSON:", dataStr);
+          }
+        }
+      }
+    }
   } catch (error: any) {
     console.error("Error asking Yefris:", error);
-    throw new Error(error?.message || "yefris went for a walk. he cannot be reached at this time.");
+    yield { type: 'error', error: error?.message || "yefris went for a walk. he cannot be reached at this time." };
   }
-};
+}
