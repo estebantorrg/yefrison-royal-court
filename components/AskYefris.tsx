@@ -32,6 +32,56 @@ export const AskYefris: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  const loadingPhrases = [
+    'yefris is doing hard yakka...',
+    'yefris is yefrising...',
+    'yefris is waffling...',
+    'yefris is thinking...',
+    'yefris is pondering...',
+    'yefris is flibbertigibberting...',
+  ];
+  const [loadingText, setLoadingText] = useState('');
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingText('');
+      return;
+    }
+
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let pausing = false;
+    let cancelled = false;
+
+    const tick = () => {
+      if (cancelled) return;
+      const phrase = loadingPhrases[phraseIndex];
+
+      if (pausing) {
+        // 1-second pause between phrases
+        pausing = false;
+        phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
+        charIndex = 0;
+        setLoadingText('');
+        setTimeout(tick, 50);
+        return;
+      }
+
+      if (charIndex <= phrase.length) {
+        setLoadingText(phrase.slice(0, charIndex));
+        charIndex++;
+        setTimeout(tick, 45);
+      } else {
+        // Phrase fully typed — pause for 1 second
+        pausing = true;
+        setTimeout(tick, 1000);
+      }
+    };
+
+    tick();
+    return () => { cancelled = true; };
+  }, [loading]);
+
   // Load history from local storage on mount
   useEffect(() => {
     const saved = localStorage.getItem('yefris_chat_sessions');
@@ -508,7 +558,7 @@ export const AskYefris: React.FC = () => {
                 <div className="flex flex-col items-start">
                   <div className="max-w-[85%] p-4 rounded-2xl bg-[#FDF2E9]/70 border border-amber-300/50 text-gray-900 rounded-bl-sm flex items-center shadow-[0_0_15px_rgba(241,196,15,0.1)]">
                     <LoadingSpinner className="mr-3 text-[#D35400] h-5 w-5" />
-                    <span className="italic font-medium text-gray-700">Divining...</span>
+                    <span className="italic font-medium text-gray-700">{loadingText}<span className="animate-pulse">|</span></span>
                   </div>
                 </div>
               )}
