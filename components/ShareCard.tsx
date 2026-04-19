@@ -82,18 +82,15 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
           ref={cardRef}
           style={{
             width: '560px',
-            padding: '2px',
-            fontFamily: "'Inter', -apple-system, sans-serif",
-          }}
-        >
-          {/* Card inner with background */}
-          <div style={{
             background: 'linear-gradient(180deg, #0c0c0c 0%, #0f0d08 50%, #141008 100%)',
             padding: '40px 36px 36px 36px',
             position: 'relative',
             border: '1px solid rgba(241, 196, 15, 0.12)',
             borderRadius: '16px',
-          }}>
+            overflow: 'hidden',
+            fontFamily: "'Inter', -apple-system, sans-serif",
+          }}
+        >
             {/* Subtle glow effect at bottom */}
             <div style={{
               position: 'absolute',
@@ -181,7 +178,6 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
                 textTransform: 'uppercase',
               }}>powered by el homun</span>
             </div>
-          </div>
         </div>
         </div>
 
