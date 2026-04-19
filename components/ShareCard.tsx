@@ -17,11 +17,21 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
     setIsGenerating(true);
 
     try {
+      // Force layout calculation wait to ensure element is fully expanded
+      await new Promise(r => setTimeout(r, 100));
+      
+      const width = cardRef.current.scrollWidth;
+      const height = cardRef.current.scrollHeight;
+
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2, // 2x for retina quality
         useCORS: true,
         logging: false,
+        width: width,
+        height: height,
+        windowWidth: width,
+        windowHeight: height,
       });
 
       const dataUrl = canvas.toDataURL('image/png');
