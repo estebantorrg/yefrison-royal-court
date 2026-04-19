@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { askYefrisStream, ChatMessage } from '../services/geminiService';
 import { LoadingSpinner } from './LoadingSpinner';
+import { ShareCard } from './ShareCard';
 
 export interface DisplayMessage {
   id: string;
@@ -32,6 +33,8 @@ export const AskYefris: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const [sharingMessage, setSharingMessage] = useState<{question: string, answer: string} | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -620,8 +623,32 @@ export const AskYefris: React.FC = () => {
                             : 'bg-[#FDF2E9] border border-amber-300/80 text-gray-900 rounded-bl-sm shadow-[0_0_15px_rgba(241,196,15,0.1)]'
                             } ${isErrorOnLastMessage ? 'border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                         >
-                          {msg.role === 'yefris' && <h3 className="text-xs tracking-wider uppercase font-bold mb-2 text-[#D35400] opacity-80 border-b border-[#D35400]/20 pb-1 inline-block">Yefris Answers</h3>}
+                          {msg.role === 'yefris' && (
+                            <div className="flex justify-between items-center mb-2 border-b border-[#D35400]/20 pb-1">
+                              <h3 className="text-xs tracking-wider uppercase font-bold text-[#D35400] opacity-80 inline-block">Yefris Answers</h3>
+                              <button
+                                onClick={() => {
+                                  // Find the closest previous user message to act as the question
+                                  let questionText = 'An inquiry to the Oracle...';
+                                  for (let i = index - 1; i >= 0; i--) {
+                                    if (activeSession.messages[i].role === 'user') {
+                                      questionText = activeSession.messages[i].text;
+                                      break;
+                                    }
+                                  }
+                                  setSharingMessage({ question: questionText, answer: msg.text });
+                                }}
+                                className="text-[#D35400] hover:text-[#E67E22] opacity-60 hover:opacity-100 transition-opacity p-1 group/share"
+                                title="Share Oracle's Wisdom"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6.632l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
                           <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text.trimStart()}</p>
+
                           
                           {/* Grounding / Homun Sources Metadata */}
                           {msg.meta && msg.meta.groundingStatus === "success" && msg.meta.sources.length > 0 && (
@@ -716,6 +743,14 @@ export const AskYefris: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {sharingMessage && (
+        <ShareCard 
+          question={sharingMessage.question} 
+          answer={sharingMessage.answer} 
+          onClose={() => setSharingMessage(null)} 
+        />
+      )}
     </>
   );
 };
