@@ -17,8 +17,15 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
     setIsGenerating(true);
 
     try {
+      // Temporarily remove scroll boundaries for html2canvas to capture full height
+      const container = document.getElementById('share-scroll-container');
+      if (container) {
+        container.style.maxHeight = 'none';
+        container.style.overflow = 'visible';
+      }
+
       // Force layout calculation wait to ensure element is fully expanded
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 150));
       
       const width = cardRef.current.scrollWidth;
       const height = cardRef.current.scrollHeight;
@@ -33,6 +40,11 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
         windowWidth: width,
         windowHeight: height,
       });
+
+      if (container) {
+        container.style.maxHeight = '';
+        container.style.overflow = '';
+      }
 
       const dataUrl = canvas.toDataURL('image/png');
       setGeneratedImage(dataUrl);
@@ -82,7 +94,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
       <div className="flex flex-col items-center gap-6 max-w-[620px] w-full" onClick={(e) => e.stopPropagation()}>
         
         {/* Scrollable area for the card if it gets too long */}
-        <div className="w-full max-h-[75vh] overflow-y-auto custom-scrollbar flex justify-center pb-4 rounded-xl">
+        <div id="share-scroll-container" className="w-full max-h-[75vh] overflow-y-auto custom-scrollbar flex justify-center pb-4 rounded-xl">
           {/* The actual card that gets rendered to image */}
 
         <div 
