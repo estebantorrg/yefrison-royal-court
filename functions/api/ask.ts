@@ -28,7 +28,7 @@ export const onRequestPost = async (context: any) => {
 
     const ai = new GoogleGenAI({ apiKey });
     
-    const getYefrisResponseStream = async (useGrounding: boolean) => {
+    const getYefrisResponse = async (useGrounding: boolean) => {
       const config: any = {
         systemInstruction: systemInstruction,
       };
@@ -37,120 +37,86 @@ export const onRequestPost = async (context: any) => {
         config.tools = [{ googleSearch: {} }];
       }
 
-      return await ai.models.generateContentStream({
+      return await ai.models.generateContent({
         model: "gemma-4-26b-a4b-it",
         contents: question,
         config: config
       });
     };
 
+    const encoder = new TextEncoder();
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
-    const encoder = new TextEncoder();
 
     const writeSSE = async (data: any) => {
       await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
     };
 
-    // Process stream asynchronously to avoid blocking the initial 200 OK response
-    (async () => {
+    context.waitUntil((async () => {
       try {
-        let stream;
+        let response;
         let groundingStatus = "not_attempted";
         let sources: any[] = [];
         let chunkDebug: any[] = [];
 
         try {
-          stream = await getYefrisResponseStream(true);
+          response = await getYefrisResponse(true);
           groundingStatus = "success";
         } catch (groundingError: any) {
-          console.warn("Grounding stream failed, falling back:", groundingError);
+          console.warn("Grounding failed, falling back:", groundingError);
           groundingStatus = `failed: ${groundingError?.message || 'unknown error'}`;
-          stream = await getYefrisResponseStream(false);
+          response = await getYefrisResponse(false);
         }
 
-        let buffer = "";
+        let fullText = response.text || "";
         let isThinking = false;
-        let checkThinkStarted = false;
 
-        for await (const chunk of stream) {
-          if (!chunk.text) continue;
-          buffer += chunk.text;
-
-          if (!checkThinkStarted) {
-            if (buffer.includes("<think>")) {
-              isThinking = true;
-              checkThinkStarted = true;
-            } else if (buffer.length > 10 && !buffer.includes("<")) {
-              checkThinkStarted = true;
-            }
-          }
-
-          if (isThinking) {
-            if (buffer.includes("</think>")) {
-              isThinking = false;
-              buffer = buffer.substring(buffer.indexOf("</think>") + 8);
-              if (buffer) {
-                await writeSSE({ type: "content", text: buffer });
-                buffer = "";
-              }
-            }
-          } else if (checkThinkStarted) {
-            if (buffer) {
-              await writeSSE({ type: "content", text: buffer });
-              buffer = "";
-            }
-          }
-          
-          // Extract sources dynamically using a deep search in case the streaming schema hides it
-          const findGroundingChunks = (obj: any): any[] | null => {
-            if (!obj || typeof obj !== 'object') return null;
-            if (obj.groundingChunks && Array.isArray(obj.groundingChunks)) return obj.groundingChunks;
-            for (const key of Object.keys(obj)) {
-              const res = findGroundingChunks(obj[key]);
-              if (res) return res;
-            }
-            return null;
-          };
-
-          const chunkSources = findGroundingChunks(chunk);
-          if (chunkSources) {
-            sources = chunkSources
-              .filter((c: any) => c.web)
-              .map((c: any) => ({
-                title: c.web.title,
-                uri: c.web.uri
-              }));
+        // Rip out the thinking block if it exists
+        if (fullText.includes("<think>")) {
+          const thinkEndIndex = fullText.indexOf("</think>");
+          if (thinkEndIndex !== -1) {
+            fullText = fullText.substring(thinkEndIndex + 8);
           }
         }
 
-        if (buffer && !isThinking) {
-          await writeSSE({ type: "content", text: buffer });
+        // Send the text content once (the client-side geminiService will typewriter it)
+        if (fullText) {
+          await writeSSE({ type: "content", text: fullText.trimStart() });
+        }
+
+        // Extract sources from the completed response object
+        const chunkSources = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        if (chunkSources && Array.isArray(chunkSources)) {
+          sources = chunkSources
+            .filter((c: any) => c.web)
+            .map((c: any) => ({
+              title: c.web.title,
+              uri: c.web.uri
+            }));
         }
 
         // Send final metadata
         await writeSSE({
           type: "metadata",
-          _oracle_meta: { groundingStatus, sources }
+          _oracle_meta: { groundingStatus, sources, chunkDebug }
         });
 
         // Close stream
-        await writer.write(encoder.encode("data: [DONE]\n\n"));
+        await writeSSE("[DONE]");
         await writer.close();
-      } catch (err: any) {
-        console.error("Stream processing error:", err);
-        await writeSSE({ type: "error", error: "yefris lost his train of thought." });
+      } catch (error: any) {
+        console.error("Stream generation error:", error);
+        await writeSSE({ type: "error", error: error?.message || "Internal server error" });
         await writer.close();
       }
-    })();
+    })());
 
     return new Response(readable, {
-      status: 200,
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "Connection": "keep-alive"
-      },
+      }
     });
   } catch (error: any) {
     console.error("Gemini API Error:", error);
