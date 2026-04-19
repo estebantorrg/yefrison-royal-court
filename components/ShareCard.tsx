@@ -108,7 +108,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
           {/* Card inner with background */}
           <div style={{
             background: 'linear-gradient(180deg, #0c0c0c 0%, #0f0d08 50%, #141008 100%)',
-            padding: '40px 36px 28px 36px',
+            padding: '40px 36px 36px 36px',
             position: 'relative',
             border: '1px solid rgba(241, 196, 15, 0.12)',
             borderRadius: '16px',
@@ -182,7 +182,9 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
               alignItems: 'center',
               justifyContent: 'space-between',
               paddingTop: '16px',
+              paddingBottom: '8px', 
               borderTop: '1px solid rgba(241, 196, 15, 0.08)',
+              lineHeight: '1',
             }}>
               <span style={{
                 color: 'rgba(241, 196, 15, 0.5)',
