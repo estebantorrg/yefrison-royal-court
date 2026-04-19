@@ -35,6 +35,25 @@ export const AskYefris: React.FC = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const oracleCardRef = useRef<HTMLDivElement>(null);
+
+  // Set correct height on Oracle card: full svh on mobile, 85vh on desktop
+  useEffect(() => {
+    const setOracleHeight = () => {
+      const el = oracleCardRef.current;
+      if (!el) return;
+      if (window.innerWidth >= 1024) {
+        el.style.height = '85vh';
+        el.style.maxHeight = '85vh';
+      } else {
+        el.style.height = '100svh';
+        el.style.maxHeight = '100svh';
+      }
+    };
+    setOracleHeight();
+    window.addEventListener('resize', setOracleHeight);
+    return () => window.removeEventListener('resize', setOracleHeight);
+  }, []);
 
   const loadingPhrases = [
     'yefris is doing hard yakka...',
@@ -454,8 +473,11 @@ export const AskYefris: React.FC = () => {
         </div>
       )}
 
-      <section id="ask-yefris" className={`py-20 px-4 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isBloodMoon ? 'theme-bloodmoon' : ''}`}>
-        <div className="max-w-6xl w-full bg-black/60 backdrop-blur-md text-[#F8F9FA] rounded-lg shadow-[0_0_50px_rgba(255,237,74,0.15)] border border-white/20 h-[85vh] min-h-[600px] flex overflow-hidden lg:flex-row flex-col">
+      <section id="ask-yefris" className={`lg:py-20 px-4 py-0 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isBloodMoon ? 'theme-bloodmoon' : ''}`}>
+        <div
+          ref={oracleCardRef}
+          className="max-w-6xl w-full bg-black/60 backdrop-blur-md text-[#F8F9FA] rounded-none lg:rounded-lg shadow-[0_0_50px_rgba(255,237,74,0.15)] border-y border-white/20 lg:border flex overflow-hidden lg:flex-row flex-col"
+        >
 
           {/* Mobile Header Toggle */}
           <div className="lg:hidden p-4 border-b border-white/10 flex justify-between items-center bg-black/40">
