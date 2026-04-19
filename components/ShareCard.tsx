@@ -101,7 +101,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
           ref={cardRef}
           style={{
             width: '560px',
-            padding: '0',
+            padding: '2px',
             fontFamily: "'Inter', -apple-system, sans-serif",
           }}
         >
