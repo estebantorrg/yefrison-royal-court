@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 
 interface ShareCardProps {
   question: string;
@@ -17,36 +17,17 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
     setIsGenerating(true);
 
     try {
-      // Temporarily remove scroll boundaries for html2canvas to capture full height
-      const container = document.getElementById('share-scroll-container');
-      if (container) {
-        container.style.maxHeight = 'none';
-        container.style.overflow = 'visible';
-      }
-
-      // Force layout calculation wait to ensure element is fully expanded
+      // Small pause to let fonts and responsive elements finish layout calculations
       await new Promise(r => setTimeout(r, 150));
       
-      const width = cardRef.current.scrollWidth;
-      const height = cardRef.current.scrollHeight;
-
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 2, // 2x for retina quality
-        useCORS: true,
-        logging: false,
-        width: width,
-        height: height,
-        windowWidth: width,
-        windowHeight: height,
+      const dataUrl = await toPng(cardRef.current, {
+        cacheBust: true,
+        pixelRatio: 2, // 2x for retina quality
+        style: {
+           margin: '0', 
+        }
       });
 
-      if (container) {
-        container.style.maxHeight = '';
-        container.style.overflow = '';
-      }
-
-      const dataUrl = canvas.toDataURL('image/png');
       setGeneratedImage(dataUrl);
     } catch (err) {
       console.error('Failed to generate share card:', err);
