@@ -64,20 +64,17 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
     }
   };
 
-  // Truncate answer for card display (max ~280 chars for aesthetics)
-  const truncatedAnswer = answer.length > 320 
-    ? answer.slice(0, 317) + '...' 
-    : answer;
+  // Ensure we format the text nicely and allow it to be full length
 
-  const truncatedQuestion = question.length > 100
-    ? question.slice(0, 97) + '...'
-    : question;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="flex flex-col items-center gap-6 max-w-[620px] w-full" onClick={(e) => e.stopPropagation()}>
         
-        {/* The actual card that gets rendered to image */}
+        {/* Scrollable area for the card if it gets too long */}
+        <div className="w-full max-h-[75vh] overflow-y-auto custom-scrollbar flex justify-center pb-4 rounded-xl">
+          {/* The actual card that gets rendered to image */}
+
         <div 
           ref={cardRef}
           style={{
@@ -143,7 +140,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
               lineHeight: '1.5',
               fontWeight: '400',
             }}>
-              "{truncatedQuestion}"
+              "{question}"
             </div>
 
             {/* Answer */}
@@ -154,8 +151,9 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
               fontWeight: '400',
               marginBottom: '32px',
               letterSpacing: '0.01em',
+              whiteSpace: 'pre-wrap', // Preserve formatting for long answers
             }}>
-              {truncatedAnswer}
+              {answer}
             </div>
 
             {/* Footer */}
@@ -181,6 +179,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
               }}>powered by el homun</span>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Action buttons */}
