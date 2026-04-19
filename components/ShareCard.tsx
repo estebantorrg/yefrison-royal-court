@@ -102,8 +102,6 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
           style={{
             width: '560px',
             padding: '0',
-            borderRadius: '16px',
-            overflow: 'hidden',
             fontFamily: "'Inter', -apple-system, sans-serif",
           }}
         >
