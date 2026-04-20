@@ -118,6 +118,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
                 fontWeight: '700',
                 letterSpacing: '3px',
                 textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
               }}>✦ CULT OF YEFRIS</span>
               <span style={{
                 marginLeft: 'auto',
@@ -126,6 +127,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
                 fontWeight: '600',
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
               }}>THE ORACLE</span>
             </div>
 
@@ -169,7 +171,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
                 fontSize: '11px',
                 fontWeight: '500',
                 letterSpacing: '1px',
-              }}>yefris.pages.dev</span>
+              }}>CULT OF YEFRIS</span>
               <span style={{
                 color: 'rgba(230, 126, 34, 0.4)',
                 fontSize: '9px',
