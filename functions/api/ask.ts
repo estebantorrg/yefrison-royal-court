@@ -16,10 +16,25 @@ rules for you:
 export const onRequestPost = async (context: any) => {
   try {
     const { request, env } = context;
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON format." }), { status: 400, headers: { "Content-Type": "application/json" }});
+    }
+
     const { question, history } = body;
 
-    const apiKey = env.VITE_GEMINI_API_KEY;
+    if (!question || typeof question !== 'string' || question.length > 5000) {
+      return new Response(JSON.stringify({ error: "Invalid question length." }), { status: 400, headers: { "Content-Type": "application/json" }});
+    }
+
+    let validHistory = [];
+    if (Array.isArray(history)) {
+      validHistory = history.slice(-20); // retain at most last 20 messages for sanity & cost
+    }
+
+    const apiKey = env.GEMINI_API_KEY;
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Configuration Error", details: "No API key found in server environment." }), {
         status: 500,
@@ -38,9 +53,14 @@ export const onRequestPost = async (context: any) => {
         config.tools = [{ googleSearch: {} }];
       }
 
+      const payloadContents = [
+        ...validHistory,
+        { role: 'user', parts: [{ text: question }] }
+      ];
+
       return await ai.models.generateContent({
         model: "gemma-4-26b-a4b-it",
-        contents: question,
+        contents: payloadContents,
         config: config
       });
     };

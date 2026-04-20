@@ -19,10 +19,13 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
     try {
       // Small pause to let fonts and responsive elements finish layout calculations
       await new Promise(r => setTimeout(r, 150));
-      
+      const elHeight = cardRef.current.offsetHeight;
+      // Prevent massive canvas height on iOS/older devices by scaling pixel ratio down if response is gigantic
+      const calculatedPixelRatio = elHeight > 2000 ? 1 : 2; 
+
       const dataUrl = await toPng(cardRef.current, {
         cacheBust: true,
-        pixelRatio: 2, // 2x for retina quality
+        pixelRatio: calculatedPixelRatio,
         style: {
            margin: '0', 
         }

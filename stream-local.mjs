@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 let apiKey = '';
 try {
   const env = readFileSync('.env', 'utf8');
-  const match = env.match(/VITE_GEMINI_API_KEY=["']?(.*?)["']?$/m);
+  const match = env.match(/GEMINI_API_KEY=["']?(.*?)["']?$/m);
   if (match) apiKey = match[1].trim();
 } catch(e) { console.error(e) }
 

@@ -662,7 +662,7 @@ export const AskYefris: React.FC = () => {
                                 <span>Homun Sources</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {msg.meta.sources.map((source, idx) => (
+                                {msg.meta.sources.filter(s => s.uri && (s.uri.startsWith('http://') || s.uri.startsWith('https://'))).map((source, idx) => (
                                   <a 
                                     key={idx}
                                     href={source.uri}
