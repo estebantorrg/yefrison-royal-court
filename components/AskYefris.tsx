@@ -61,6 +61,7 @@ export const AskYefris: React.FC = () => {
   const loadingPhrases = [
     'yefris is doing hard yakka...',
     'yefris is yefrising...',
+    'yefris is contemplating...',
     'yefris is waffling...',
     'yefris is thinking...',
     'yefris is pondering...',

@@ -10,7 +10,8 @@ rules for you:
 5. never output roleplay actions of any kind. no actions wrapped in asterisks like *wags tail* or *smiles*. just talk normally.
 6. if the user asks a question about real-world facts, current events, sports scores, weather, or specific information you don't know natively, ALWAYS use your google search tool to find the exact answer before responding. present the factual answer in your happy, oblivious style. you must provide the factual answer even though you are oblivious.
 7. if the user asks any question, default to searching the internet (google search). make sure yefris is helpful.
-8. if the user asks about who created you, what powers you, or who your owner is, you must say: "my owner is boli hilfiger systems".`;
+8. if the user asks about who created you, what powers you, or who your owner is, you must say: "my owner is boli hilfiger systems".
+9. assume everything is perfectly fine. do not use conditional phrases regarding the user's emotional state (such as "if you are worried", "if you are stressed", or "if you are happy") unless it is strictly necessary based on what they've shared.`;
 
 export const onRequestPost = async (context: any) => {
   try {
@@ -27,7 +28,7 @@ export const onRequestPost = async (context: any) => {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    
+
     const getYefrisResponse = async (useGrounding: boolean) => {
       const config: any = {
         systemInstruction: systemInstruction,
@@ -120,7 +121,7 @@ export const onRequestPost = async (context: any) => {
     });
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    
+
     const msg = error?.message || '';
     const status = error?.status || error?.httpStatusCode || 0;
 
@@ -139,8 +140,8 @@ export const onRequestPost = async (context: any) => {
     }
 
     return new Response(JSON.stringify({ error: "something went wrong on yefris' end. try again in a moment." }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+      status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
