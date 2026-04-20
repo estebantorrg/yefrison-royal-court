@@ -82,6 +82,8 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
           ref={cardRef}
           style={{
             width: '560px',
+            height: 'max-content',
+            flexShrink: 0,
             background: 'linear-gradient(180deg, #0c0c0c 0%, #0f0d08 50%, #141008 100%)',
             padding: '40px 36px 36px 36px',
             position: 'relative',
