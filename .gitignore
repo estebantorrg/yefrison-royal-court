@@ -32,6 +32,10 @@ error.log
 *.log
 
 # local env files
+.env
+.env.local
+.env.*.local
+
 # vscode
 .vscode
 # Local Netlify folder
