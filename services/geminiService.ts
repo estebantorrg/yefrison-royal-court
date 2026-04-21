@@ -13,7 +13,7 @@ export type StreamUpdate =
   | { type: 'metadata', _oracle_meta: OracleMeta }
   | { type: 'error', error: string };
 
-export async function* askYefrisStream(question: string, history: ChatMessage[] = []): AsyncGenerator<StreamUpdate, void, unknown> {
+export async function* askYefrisStream(question: string, history: ChatMessage[] = [], signal?: AbortSignal): AsyncGenerator<StreamUpdate, void, unknown> {
   try {
     const response = await fetch('/api/ask', {
       method: 'POST',
@@ -21,6 +21,7 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ question, history }),
+      signal,
     });
 
     if (!response.ok) {
@@ -38,6 +39,8 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
     let buffer = "";
 
     while (true) {
+      if (signal?.aborted) return;
+
       const { done, value } = await reader.read();
       if (done) break;
 
@@ -59,9 +62,14 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
             
             if (data.type === 'content' && data.text) {
               const chars = Array.from(data.text);
-              for (const char of chars) {
-                yield { type: 'content', text: char };
-                await new Promise(resolve => setTimeout(resolve, 8)); // 8ms delay looks dynamic and natural
+              // Dynamic accelerator: sweep the full text linearly over roughly ~80 ticks (max 1.2 seconds visual wait)
+              const batchSize = Math.max(1, Math.ceil(chars.length / 80)); 
+              
+              for (let i = 0; i < chars.length; i += batchSize) {
+                if (signal?.aborted) return;
+                const batch = chars.slice(i, i + batchSize).join('');
+                yield { type: 'content', text: batch };
+                await new Promise(resolve => setTimeout(resolve, 10)); // Hyper-fluid 10ms frame
               }
             } else {
               yield data;
@@ -73,6 +81,10 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
       }
     }
   } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.log('Yefris stream aborted gracefully.');
+      return; 
+    }
     console.error("Error asking Yefris:", error);
     yield { type: 'error', error: error?.message || "yefris went for a walk. he cannot be reached at this time." };
   }

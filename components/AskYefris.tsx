@@ -39,6 +39,7 @@ export const AskYefris: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const oracleCardRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Set correct height on Oracle card: full svh on mobile, 85vh on desktop
   useEffect(() => {
@@ -241,6 +242,13 @@ export const AskYefris: React.FC = () => {
     if (!activeSessionId) return;
     setError('');
     
+    // Terminate any existing stream to prevent race conditions and zombie calls
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const currentAbortController = new AbortController();
+    abortControllerRef.current = currentAbortController;
+
     // We keep loading true while the oracle is thinking
     setLoading(true);
 
@@ -275,7 +283,7 @@ export const AskYefris: React.FC = () => {
       let finalMeta: any = undefined;
 
       // Start streaming
-      for await (const update of askYefrisStream(questionText, historyPayload)) {
+      for await (const update of askYefrisStream(questionText, historyPayload, currentAbortController.signal)) {
         if (isFirstChunk) {
           // As soon as first text or meta arrives, we turn off the generic loading spinner
           setLoading(false);
@@ -315,6 +323,10 @@ export const AskYefris: React.FC = () => {
       }
 
     } catch (err: any) {
+      if (err.name === 'AbortError' || currentAbortController.signal.aborted) {
+         console.log("Stream actively aborted by overlapping request.");
+         return;
+      }
       console.error(err);
       setError(err.message || 'yefris went to take a break. come back later.');
       // remove the partial empty message if it failed before starting
@@ -326,7 +338,10 @@ export const AskYefris: React.FC = () => {
         return session;
       }));
     } finally {
-      setLoading(false);
+      if (abortControllerRef.current === currentAbortController) {
+        abortControllerRef.current = null;
+        setLoading(false);
+      }
     }
   };
 
