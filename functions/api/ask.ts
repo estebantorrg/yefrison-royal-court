@@ -29,12 +29,14 @@ export const onRequestPost = async (context: any) => {
       return new Response(JSON.stringify({ error: "Invalid question length." }), { status: 400, headers: { "Content-Type": "application/json" }});
     }
 
-    let validHistory = [];
+    let validHistory: any[] = [];
     if (Array.isArray(history)) {
-      validHistory = history.slice(-20); // retain at most last 20 messages for sanity & cost
+      validHistory = history.slice(-100); // Allow deep history for compaction, cap maliciously huge arrays
     }
 
     const apiKey = env.GEMINI_API_KEY;
+    const compactApiKey = env.GEMINI_COMPACT_API_KEY;
+    
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Configuration Error", details: "No API key found in server environment." }), {
         status: 500,
@@ -42,28 +44,9 @@ export const onRequestPost = async (context: any) => {
       });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-
-    const getYefrisResponse = async (useGrounding: boolean) => {
-      const config: any = {
-        systemInstruction: systemInstruction,
-      };
-
-      if (useGrounding) {
-        config.tools = [{ googleSearch: {} }];
-      }
-
-      const payloadContents = [
-        ...validHistory,
-        { role: 'user', parts: [{ text: question }] }
-      ];
-
-      return await ai.models.generateContent({
-        model: "gemma-4-26b-a4b-it",
-        contents: payloadContents,
-        config: config
-      });
-    };
+    const aiMain = new GoogleGenAI({ apiKey });
+    // Use compact key if present, fallback to main if missing during dev/testing
+    const aiCompact = compactApiKey ? new GoogleGenAI({ apiKey: compactApiKey }) : aiMain;
 
     const encoder = new TextEncoder();
     const { readable, writable } = new TransformStream();
@@ -75,6 +58,59 @@ export const onRequestPost = async (context: any) => {
 
     context.waitUntil((async () => {
       try {
+        let processingHistory = validHistory;
+        const historyCharCount = validHistory.reduce((acc: number, curr: any) => acc + (curr.parts?.[0]?.text?.length || 0), 0);
+        const needsCompaction = validHistory.length > 20 || historyCharCount > 5000;
+
+        if (needsCompaction && processingHistory.length > 4) {
+          try {
+            const historyToCompact = processingHistory.slice(0, -3);
+            const retainedHistory = processingHistory.slice(-3);
+            
+            const compactionInstruction = "You are a clinical memory summarizer. Your only purpose is to produce a dense, compact summary of the provided chat history. Extract all important facts the user mentioned about themselves, the sequence of the conversation, and the core context. Do not reply to the user. Do not roleplay. Do not output anything except the summary.";
+            
+            const compactResponse = await aiCompact.models.generateContent({
+              model: "gemma-4-26b-a4b-it", // 26b strictly for compacting
+              contents: historyToCompact,
+              config: {
+                systemInstruction: compactionInstruction,
+                // Thinking explicitly NOT enabled here, passing minimal config
+              }
+            });
+
+            if (compactResponse.text) {
+               processingHistory = [
+                 { role: 'user', parts: [{ text: `[RECOVERED ORACLE MEMORIES]: ${compactResponse.text.trim()}` }] },
+                 { role: 'model', parts: [{ text: "i remember everything." }] },
+                 ...retainedHistory
+               ];
+            }
+          } catch (err) {
+            console.warn("Compaction failed, falling back to full history:", err);
+          }
+        }
+
+        const getYefrisResponse = async (useGrounding: boolean) => {
+          const config: any = {
+            systemInstruction: systemInstruction,
+          };
+
+          if (useGrounding) {
+            config.tools = [{ googleSearch: {} }];
+          }
+
+          const payloadContents = [
+            ...processingHistory,
+            { role: 'user', parts: [{ text: question }] }
+          ];
+
+          return await aiMain.models.generateContent({
+            model: "gemma-4-31b-it", // 31b strictly for the advanced main convo
+            contents: payloadContents,
+            config: config
+          });
+        };
+
         let response;
         let groundingStatus = "not_attempted";
         let sources: any[] = [];
