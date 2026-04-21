@@ -62,10 +62,11 @@ export const onRequestPost = async (context: any) => {
         const historyCharCount = validHistory.reduce((acc: number, curr: any) => acc + (curr.parts?.[0]?.text?.length || 0), 0);
         const needsCompaction = validHistory.length > 20 || historyCharCount > 5000;
 
-        if (needsCompaction && processingHistory.length > 4) {
+        // If history is massive, compact earlier (threshold lowered to 2 messages)
+        if (needsCompaction && processingHistory.length > 2) {
           try {
-            const historyToCompact = processingHistory.slice(0, -3);
-            const retainedHistory = processingHistory.slice(-3);
+            const historyToCompact = processingHistory.slice(0, -2);
+            const retainedHistory = processingHistory.slice(-2);
             
             const compactionInstruction = "You are a clinical memory summarizer. Your only purpose is to produce a dense, compact summary of the provided chat history. Extract all important facts the user mentioned about themselves, the sequence of the conversation, and the core context. Do not reply to the user. Do not roleplay. Do not output anything except the summary.";
             
