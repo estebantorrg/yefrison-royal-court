@@ -25,9 +25,8 @@ export const onRequestPost = async (context: any) => {
 
     const { question, history } = body;
 
-    // Uncapped the hard 5,000 threshold to 100,000 so the system can accept massive stories.
-    // The compacter will aggressively shrink it on the backend on the next turn.
-    if (!question || typeof question !== 'string' || question.length > 100000) {
+    // Restore the hard 5,000 threshold.
+    if (!question || typeof question !== 'string' || question.length > 5000) {
       return new Response(JSON.stringify({ error: "Invalid question length." }), { status: 400, headers: { "Content-Type": "application/json" }});
     }
 

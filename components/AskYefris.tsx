@@ -35,6 +35,7 @@ export const AskYefris: React.FC = () => {
   const [error, setError] = useState('');
   
   const [sharingMessage, setSharingMessage] = useState<{question: string, answer: string} | null>(null);
+  const [charLimitWarning, setCharLimitWarning] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -347,6 +348,11 @@ export const AskYefris: React.FC = () => {
 
   const submitQuestion = async () => {
     if (!question.trim() || !activeSessionId) return;
+
+    if (question.length > 5000) {
+      setCharLimitWarning(true);
+      return;
+    }
 
     const normalizedQ = question.trim().toLowerCase();
 
@@ -731,17 +737,22 @@ export const AskYefris: React.FC = () => {
             {/* Input Area */}
             <div className="flex-shrink-0 border-t border-white/10 p-4 lg:p-6 bg-black/40 backdrop-blur-sm">
               <form onSubmit={handleSubmit} className="flex gap-3 items-end">
-                <div className="flex-grow">
+                <div className="flex-grow relative">
                   <textarea
                     id="question"
                     rows={1}
-                    className="w-full px-4 py-3 min-h-[50px] max-h-[150px] border border-white/20 focus:ring-2 focus:ring-[#F1C40F] focus:border-[#F1C40F] rounded-lg resize-y bg-black/60 text-white outline-none transition-all duration-200"
+                    className={`w-full px-4 py-3 min-h-[50px] max-h-[150px] border ${question.length > 5000 ? 'border-red-500/80 focus:ring-red-500 focus:border-red-500' : 'border-white/20 focus:ring-[#F1C40F] focus:border-[#F1C40F]'} rounded-lg resize-y bg-black/60 text-white outline-none transition-all duration-200 pr-16`}
                     placeholder="Ask the Oracle..."
                     value={question}
                     onChange={handleInputTextChange}
                     onKeyDown={handleKeyDown}
                     disabled={loading}
                   />
+                  {question.length > 4000 && (
+                    <div className={`absolute right-3 bottom-3 text-[10px] font-bold tracking-tighter pointer-events-none bg-black/40 px-1 rounded ${question.length > 5000 ? 'text-red-400' : 'text-[#F1C40F]/60'}`}>
+                      {question.length}/5000
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -766,6 +777,25 @@ export const AskYefris: React.FC = () => {
           answer={sharingMessage.answer} 
           onClose={() => setSharingMessage(null)} 
         />
+      )}
+
+      {charLimitWarning && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setCharLimitWarning(false)}>
+          <div className="bg-[#1a1a1a] border border-red-500/50 rounded-xl p-6 max-w-sm mx-4 shadow-[0_0_30px_rgba(239,68,68,0.2)] text-center" onClick={e => e.stopPropagation()}>
+            <div className="text-red-400 mb-3">
+              <svg className="w-10 h-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2 display-font">Message Too Long</h3>
+            <p className="text-gray-300 text-sm mb-1">Your message exceeds the 5,000 character limit.</p>
+            <p className="text-red-400/80 text-xs font-bold mb-4">{question.length.toLocaleString()} / 5,000 characters</p>
+            <button
+              onClick={() => setCharLimitWarning(false)}
+              className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-sm uppercase tracking-wider"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
