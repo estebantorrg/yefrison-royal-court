@@ -23,7 +23,9 @@ const App = () => {
       const st = 'scrollTop';
       const sh = 'scrollHeight';
       // Calculate percentage, maxing at 90% scroll for full color effect before the very end
-      let percent = ((h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight)) * 110; 
+      // Multiplier of 110 (instead of 100) so the glow reaches full intensity at ~91% scroll,
+      // giving a complete visual effect before the user hits the absolute bottom of the page.
+      let percent = ((h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight)) * 110;
       setScrollP(Math.min(100, Math.max(0, percent)));
     };
     
@@ -194,7 +196,7 @@ const App = () => {
         </p>
         <div className="flex justify-center mt-8">
           <img 
-            src="yefris_laser.png" 
+            src="/yefris_laser.png" 
             alt="Yefris with lasers" 
             className="w-full max-w-lg rounded border border-red-500 shadow-[0_0_20px_rgba(231,76,60,0.4)]"
           />
@@ -214,7 +216,7 @@ const App = () => {
           <div className="flex flex-col md:flex-row items-center gap-8 justify-center mt-6">
             <div className="w-1/2 md:w-1/3">
               <img 
-                src="cherry_scom.png" 
+                src="/cherry_scom.png" 
                 alt="Cherry Scom" 
                 className="w-full h-auto rounded-full border-4 border-[#F39C12] shadow-[0_0_30px_rgba(243,156,18,0.4)]"
               />
@@ -287,7 +289,7 @@ const App = () => {
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-[#F1C40F] via-[#E67E22] to-[#F1C40F] rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-spin-slow"></div>
           <img 
-            src="dog.png" 
+            src="/dog.png" 
             alt="The Glorious Yefris" 
             className="relative w-64 h-64 md:w-96 md:h-96 rounded-full object-cover border-8 border-white shadow-2xl"
           />

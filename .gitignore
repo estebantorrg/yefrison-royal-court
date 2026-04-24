@@ -8,16 +8,6 @@
 
 # production
 /build
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
 /dist
 
 # misc
@@ -38,5 +28,6 @@ error.log
 
 # vscode
 .vscode
+
 # Local Netlify folder
 .netlify

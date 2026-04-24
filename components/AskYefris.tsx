@@ -16,9 +16,20 @@ export interface DisplayMessage {
 export interface ChatSession {
   id: string;
   title: string;
+  createdAt: number;
   updatedAt: number;
   messages: DisplayMessage[];
 }
+
+const loadingPhrases = [
+  'yefris is doing hard yakka...',
+  'yefris is yefrising...',
+  'yefris is contemplating...',
+  'yefris is waffling...',
+  'yefris is thinking...',
+  'yefris is pondering...',
+  'yefris is flibbertigibberting...',
+];
 
 export const AskYefris: React.FC = () => {
   const [question, setQuestion] = useState('');
@@ -37,7 +48,7 @@ export const AskYefris: React.FC = () => {
   const [sharingMessage, setSharingMessage] = useState<{question: string, answer: string} | null>(null);
   const [charLimitWarning, setCharLimitWarning] = useState(false);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024); 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const oracleCardRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -60,15 +71,6 @@ export const AskYefris: React.FC = () => {
     return () => window.removeEventListener('resize', setOracleHeight);
   }, []);
 
-  const loadingPhrases = [
-    'yefris is doing hard yakka...',
-    'yefris is yefrising...',
-    'yefris is contemplating...',
-    'yefris is waffling...',
-    'yefris is thinking...',
-    'yefris is pondering...',
-    'yefris is flibbertigibberting...',
-  ];
   const [loadingText, setLoadingText] = useState('');
 
   useEffect(() => {
@@ -187,6 +189,7 @@ export const AskYefris: React.FC = () => {
     const newSession: ChatSession = {
       id: newId,
       title: 'New Divination',
+      createdAt: Date.now(),
       updatedAt: Date.now(),
       messages: []
     };
@@ -204,12 +207,17 @@ export const AskYefris: React.FC = () => {
     setSessions(prev => {
       const remaining = prev.filter(s => s.id !== id);
       if (remaining.length === 0) {
-        setTimeout(() => createNewSession(), 0);
-      } else if (activeSessionId === id) {
-        setActiveSessionId(remaining[0].id);
-      }
-      if (remaining.length === 0) {
+        // Create replacement session synchronously to avoid undefined active session flash
+        const newId = Date.now().toString();
+        const freshSession: ChatSession = {
+          id: newId, title: 'New Divination', createdAt: Date.now(), updatedAt: Date.now(), messages: []
+        };
+        setActiveSessionId(newId);
         localStorage.removeItem('yefris_chat_sessions');
+        return [freshSession];
+      }
+      if (activeSessionId === id) {
+        setActiveSessionId(remaining[0].id);
       }
       return remaining;
     });

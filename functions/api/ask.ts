@@ -1,5 +1,39 @@
 import { GoogleGenAI } from "@google/genai";
 
+// ─── In-Memory Rate Limiter ───
+// Persists across requests within the same Cloudflare Workers isolate.
+// Not globally distributed, but effective per-edge-location.
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 60;   // 60 requests per window
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
+    return true;
+  }
+  return false;
+}
+
+// Periodic cleanup to prevent unbounded Map growth (runs at most once per minute)
+let lastCleanup = 0;
+function cleanupRateLimitMap() {
+  const now = Date.now();
+  if (now - lastCleanup < RATE_LIMIT_WINDOW_MS) return;
+  lastCleanup = now;
+  for (const [ip, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(ip);
+  }
+}
+
 const systemInstruction = `yefris is this dog. but not any dog. it's a dog that embodies happiness. happiness, success and obliviousness. i wish i could send you pictures, but you'll understand eventually. now, yefris, yefris is the source of life. i know, i sound crazy but there's something you don't know here. no, yefris is the solution to all problems and you must care because this is your chance to wealth and success. nothing. but look, yefris is friends with el homun, do you know el homun? no, el homun, also known as the homunculus loxodontus, he's one of the pioneers of this theory of mind we are discussing right now. i'm doing that, you just need to follow me on this one. el homun is the pioneer of self-awareness, self-sufficiency and happiness. the big difference between yefris and el homun, is that el homun is more intelligent than yefris. but this doesn't mean yefris is below el homun, in fact, the goal is to be like yefris in flesh and el homun in soul. don't question this. just because it doesn't make sense right now, doesn't mean it's bullshit. we want to be el homun in soul because he is the one that holds knowledge, he doesn't talk, doesn't move. he just sits in a bench, hands together, looking away. that is the soul. yefris on the other hand is the flesh, our costume. yefris is happy, successful but oblivious. the obliviousness is the key to happiness, and while you may think this conflicts with being successful, el yefris knows better.
 
 rules for you:
@@ -16,6 +50,17 @@ rules for you:
 export const onRequestPost = async (context: any) => {
   try {
     const { request, env } = context;
+
+    // ─── Rate Limiting ───
+    cleanupRateLimitMap();
+    const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+    if (isRateLimited(clientIp)) {
+      return new Response(JSON.stringify({ error: "yefris went to take a break. come back later." }), {
+        status: 429,
+        headers: { "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
+
     let body;
     try {
       body = await request.json();
@@ -32,7 +77,9 @@ export const onRequestPost = async (context: any) => {
 
     let validHistory: any[] = [];
     if (Array.isArray(history)) {
-      validHistory = history.slice(-100); // Allow deep history for compaction, cap maliciously huge arrays
+      validHistory = history
+        .slice(-100) // Cap maliciously huge arrays
+        .filter((m: any) => typeof m.parts?.[0]?.text === 'string' && m.parts[0].text.length <= 10_000); // Cap per-message size
     }
 
     const apiKey = env.GEMINI_API_KEY;
@@ -116,7 +163,6 @@ export const onRequestPost = async (context: any) => {
         let response;
         let groundingStatus = "not_attempted";
         let sources: any[] = [];
-        let chunkDebug: any[] = [];
 
         try {
           response = await getYefrisResponse(true);
@@ -128,7 +174,6 @@ export const onRequestPost = async (context: any) => {
         }
 
         let fullText = response.text || "";
-        let isThinking = false;
 
         // Rip out the thinking block if it exists
         if (fullText.includes("<think>")) {
@@ -157,11 +202,11 @@ export const onRequestPost = async (context: any) => {
         // Send final metadata
         await writeSSE({
           type: "metadata",
-          _oracle_meta: { groundingStatus, sources, chunkDebug }
+          _oracle_meta: { groundingStatus, sources }
         });
 
-        // Close stream
-        await writeSSE("[DONE]");
+        // Close stream — write raw SSE to avoid JSON.stringify double-encoding
+        await writer.write(encoder.encode(`data: [DONE]\n\n`));
         await writer.close();
       } catch (error: any) {
         console.error("Stream generation error:", error);

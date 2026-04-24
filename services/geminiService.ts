@@ -52,7 +52,7 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
-          const dataStr = line.replace('data: ', '').trim();
+          const dataStr = line.startsWith('data: ') ? line.slice(6).trim() : line.trim();
           if (dataStr === '[DONE]') {
             return;
           }
