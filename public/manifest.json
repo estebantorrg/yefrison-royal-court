@@ -1,0 +1,17 @@
+{
+  "name": "Cult of Yefris",
+  "short_name": "Yefris",
+  "description": "The Yefris-El Homun Theory of Mind. A philosophy of happiness, success, and selective obliviousness.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "/dog.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { askYefrisStream, ChatMessage } from '../services/geminiService';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ShareCard } from './ShareCard';
@@ -525,6 +526,13 @@ export const AskYefris: React.FC = () => {
           </div>
 
           {/* Sidebar (History List) */}
+          {/* Mobile backdrop — tap to close */}
+          {isSidebarOpen && (
+            <div
+              className="lg:hidden fixed inset-0 bg-black/50 z-10"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
         <div className={`
           ${isSidebarOpen ? 'flex' : 'hidden'} 
           flex-col w-full lg:w-64 bg-black/80 border-r border-white/10 flex-shrink-0 z-20 
@@ -677,7 +685,9 @@ export const AskYefris: React.FC = () => {
                               </button>
                             </div>
                           )}
-                          <p className="text-base leading-relaxed whitespace-pre-wrap font-medium">{msg.text.trimStart()}</p>
+                          <div className="text-base leading-relaxed font-medium oracle-markdown">
+                            <ReactMarkdown>{msg.text.trimStart()}</ReactMarkdown>
+                          </div>
 
                           
                           {/* Grounding / Homun Sources Metadata */}

@@ -62,14 +62,14 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
             
             if (data.type === 'content' && data.text) {
               const chars = Array.from(data.text);
-              // Dynamic accelerator: sweep the full text linearly over roughly ~80 ticks (max 1.2 seconds visual wait)
-              const batchSize = Math.max(1, Math.ceil(chars.length / 80)); 
+              // Fast sweep: ~40 ticks at 4ms each = ~160ms total visual delay (snappy, not sluggish)
+              const batchSize = Math.max(1, Math.ceil(chars.length / 40)); 
               
               for (let i = 0; i < chars.length; i += batchSize) {
                 if (signal?.aborted) return;
                 const batch = chars.slice(i, i + batchSize).join('');
                 yield { type: 'content', text: batch };
-                await new Promise(resolve => setTimeout(resolve, 10)); // Hyper-fluid 10ms frame
+                await new Promise(resolve => setTimeout(resolve, 4));
               }
             } else {
               yield data;
