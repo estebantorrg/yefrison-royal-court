@@ -80,6 +80,10 @@ export const onRequestPost = async (context: any) => {
       return new Response(JSON.stringify({ error: "Invalid JSON format." }), { status: 400, headers: { "Content-Type": "application/json" }});
     }
 
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return new Response(JSON.stringify({ error: "Invalid request body." }), { status: 400, headers: { "Content-Type": "application/json" }});
+    }
+
     const { question, history } = body;
 
     // Restore the hard 5,000 threshold.

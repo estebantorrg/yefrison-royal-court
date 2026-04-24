@@ -11,6 +11,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
+  const [isCopied, setIsCopied] = React.useState(false);
 
   const generateImage = useCallback(async () => {
     if (!cardRef.current) return;
@@ -60,11 +61,8 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
         new ClipboardItem({ 'image/png': blob })
       ]);
       // Brief visual feedback
-      const btn = document.getElementById('copy-btn');
-      if (btn) {
-        btn.textContent = 'Copied!';
-        setTimeout(() => { btn.textContent = 'Copy Image'; }, 1500);
-      }
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 1500);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -206,7 +204,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
             disabled={!generatedImage || isGenerating}
             className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg shadow-lg transition-all duration-200 disabled:opacity-40 text-sm uppercase tracking-wider border border-white/20"
           >
-            Copy Image
+            {isCopied ? 'Copied!' : 'Copy Image'}
           </button>
           <button
             onClick={onClose}

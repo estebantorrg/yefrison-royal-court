@@ -25,7 +25,8 @@ const App = () => {
       // Calculate percentage, maxing at 90% scroll for full color effect before the very end
       // Multiplier of 110 (instead of 100) so the glow reaches full intensity at ~91% scroll,
       // giving a complete visual effect before the user hits the absolute bottom of the page.
-      let percent = ((h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight)) * 110;
+      const scrollHeight = (h[sh] || b[sh]) - h.clientHeight;
+      let percent = scrollHeight > 0 ? ((h[st] || b[st]) / scrollHeight) * 110 : 0;
       setScrollP(Math.min(100, Math.max(0, percent)));
     };
     
@@ -225,7 +226,7 @@ const App = () => {
               <iframe 
                 ref={iframeRef}
                 className="w-full h-full rounded shadow-[0_0_15px_rgba(243,156,18,0.3)] border border-[#F39C12]/30"
-                src={`https://www.youtube.com/embed/GriAXvDLqwk?enablejsapi=1${hasReachedVideo ? '&autoplay=1' : ''}`}
+                src="https://www.youtube.com/embed/GriAXvDLqwk?enablejsapi=1"
                 title="Cherry Scom - Dame Guevo" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
