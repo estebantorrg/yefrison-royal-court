@@ -134,9 +134,12 @@ export const onRequestPost = async (context: any) => {
             
             const compactionInstruction = "You are a clinical memory summarizer. Your only purpose is to produce a dense, compact summary of the provided chat history. Extract all important facts the user mentioned about themselves, the sequence of the conversation, and the core context. Do not reply to the user. Do not roleplay. Do not output anything except the summary.";
             
+            const transcript = historyToCompact.map((m: any) => `${m.role.toUpperCase()}: ${m.parts?.[0]?.text || ''}`).join('\n\n');
+            const compactionPayload = [{ role: 'user', parts: [{ text: `Please summarize the following conversation:\n\n${transcript}` }] }];
+            
             const compactResponse = await aiCompact.models.generateContent({
               model: "gemma-4-26b-a4b-it", // 26b strictly for compacting
-              contents: historyToCompact,
+              contents: compactionPayload,
               config: {
                 systemInstruction: compactionInstruction,
                 // Thinking explicitly NOT enabled here, passing minimal config

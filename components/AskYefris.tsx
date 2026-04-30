@@ -53,6 +53,7 @@ export const AskYefris: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const oracleCardRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const homunTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Set correct height on Oracle card: full svh on mobile, 85vh on desktop
   useEffect(() => {
@@ -186,6 +187,17 @@ export const AskYefris: React.FC = () => {
   }, [activeSession?.messages, error, loading]);
 
   const createNewSession = () => {
+    const existingEmptySession = sessions.find(s => s.messages.length === 0);
+    
+    if (existingEmptySession) {
+      setActiveSessionId(existingEmptySession.id);
+      setError('');
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      }
+      return;
+    }
+
     const newId = Date.now().toString();
     const newSession: ChatSession = {
       id: newId,
@@ -387,7 +399,8 @@ export const AskYefris: React.FC = () => {
     if (normalizedQ === '/homun' || normalizedQ === 'el homun in flesh') {
       setQuestion('');
       setShowHomun(true);
-      setTimeout(() => setShowHomun(false), 6000);
+      if (homunTimerRef.current) clearTimeout(homunTimerRef.current);
+      homunTimerRef.current = setTimeout(() => setShowHomun(false), 6000);
       return;
     }
 

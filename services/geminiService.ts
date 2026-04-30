@@ -14,6 +14,7 @@ export type StreamUpdate =
   | { type: 'error', error: string };
 
 export async function* askYefrisStream(question: string, history: ChatMessage[] = [], signal?: AbortSignal): AsyncGenerator<StreamUpdate, void, unknown> {
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
     const response = await fetch('/api/ask', {
       method: 'POST',
@@ -34,7 +35,7 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
 
     if (!response.body) throw new Error("No response body");
 
-    const reader = response.body.getReader();
+    reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
 
@@ -87,5 +88,13 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
     }
     console.error("Error asking Yefris:", error);
     yield { type: 'error', error: error?.message || "yefris went for a walk. he cannot be reached at this time." };
+  } finally {
+    if (reader) {
+      try {
+        await reader.cancel();
+      } catch (e) {
+        // ignore errors on cleanup
+      }
+    }
   }
 }
