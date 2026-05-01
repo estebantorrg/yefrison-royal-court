@@ -1,0 +1,94 @@
+﻿diff --git a/components/AskYefris.tsx b/components/AskYefris.tsx
+index 4d53a35..f5d6a4e 100644
+--- a/components/AskYefris.tsx
++++ b/components/AskYefris.tsx
+@@ -53,6 +53,7 @@ export const AskYefris: React.FC = () => {
+   const chatContainerRef = useRef<HTMLDivElement>(null);
+   const oracleCardRef = useRef<HTMLDivElement>(null);
+   const abortControllerRef = useRef<AbortController | null>(null);
++  const homunTimerRef = useRef<NodeJS.Timeout | null>(null);
+ 
+   // Set correct height on Oracle card: full svh on mobile, 85vh on desktop
+   useEffect(() => {
+@@ -186,6 +187,17 @@ export const AskYefris: React.FC = () => {
+   }, [activeSession?.messages, error, loading]);
+ 
+   const createNewSession = () => {
++    const existingEmptySession = sessions.find(s => s.messages.length === 0);
++    
++    if (existingEmptySession) {
++      setActiveSessionId(existingEmptySession.id);
++      setError('');
++      if (window.innerWidth < 768) {
++        setIsSidebarOpen(false);
++      }
++      return;
++    }
++
+     const newId = Date.now().toString();
+     const newSession: ChatSession = {
+       id: newId,
+@@ -387,7 +399,8 @@ export const AskYefris: React.FC = () => {
+     if (normalizedQ === '/homun' || normalizedQ === 'el homun in flesh') {
+       setQuestion('');
+       setShowHomun(true);
+-      setTimeout(() => setShowHomun(false), 6000);
++      if (homunTimerRef.current) clearTimeout(homunTimerRef.current);
++      homunTimerRef.current = setTimeout(() => setShowHomun(false), 6000);
+       return;
+     }
+ 
+diff --git a/functions/api/ask.ts b/functions/api/ask.ts
+index f28e430..39682d6 100644
+--- a/functions/api/ask.ts
++++ b/functions/api/ask.ts
+@@ -134,9 +134,12 @@ export const onRequestPost = async (context: any) => {
+             
+             const compactionInstruction = "You are a clinical memory summarizer. Your only purpose is to produce a dense, compact summary of the provided chat history. Extract all important facts the user mentioned about themselves, the sequence of the conversation, and the core context. Do not reply to the user. Do not roleplay. Do not output anything except the summary.";
+             
++            const transcript = historyToCompact.map((m: any) => `${m.role.toUpperCase()}: ${m.parts?.[0]?.text || ''}`).join('\n\n');
++            const compactionPayload = [{ role: 'user', parts: [{ text: `Please summarize the following conversation:\n\n${transcript}` }] }];
++            
+             const compactResponse = await aiCompact.models.generateContent({
+               model: "gemma-4-26b-a4b-it", // 26b strictly for compacting
+-              contents: historyToCompact,
++              contents: compactionPayload,
+               config: {
+                 systemInstruction: compactionInstruction,
+                 // Thinking explicitly NOT enabled here, passing minimal config
+diff --git a/services/geminiService.ts b/services/geminiService.ts
+index 886aa38..d9b26b3 100644
+--- a/services/geminiService.ts
++++ b/services/geminiService.ts
+@@ -14,6 +14,7 @@ export type StreamUpdate =
+   | { type: 'error', error: string };
+ 
+ export async function* askYefrisStream(question: string, history: ChatMessage[] = [], signal?: AbortSignal): AsyncGenerator<StreamUpdate, void, unknown> {
++  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+   try {
+     const response = await fetch('/api/ask', {
+       method: 'POST',
+@@ -34,7 +35,7 @@ export async function* askYefrisStream(question: string, history: ChatMessage[]
+ 
+     if (!response.body) throw new Error("No response body");
+ 
+-    const reader = response.body.getReader();
++    reader = response.body.getReader();
+     const decoder = new TextDecoder("utf-8");
+     let buffer = "";
+ 
+@@ -87,5 +88,13 @@ export async function* askYefrisStream(question: string, history: ChatMessage[]
+     }
+     console.error("Error asking Yefris:", error);
+     yield { type: 'error', error: error?.message || "yefris went for a walk. he cannot be reached at this time." };
++  } finally {
++    if (reader) {
++      try {
++        await reader.cancel();
++      } catch (e) {
++        // ignore errors on cleanup
++      }
++    }
+   }
+ }
+\ No newline at end of file
