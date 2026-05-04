@@ -21,6 +21,15 @@ interface LeaderboardEntry {
   score: number;
 }
 
+// Anti-Cheat Signature Generator
+const generateSignature = async (name: string, score: number, timestamp: number) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(`${name}:${score}:${timestamp}:YEFRIS_SECRET_SALT_V1`);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
 export const YefrisLaserDefense: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -132,10 +141,13 @@ export const YefrisLaserDefense: React.FC = () => {
     
     setIsSubmittingScore(true);
     try {
+      const timestamp = Date.now();
+      const hash = await generateSignature(playerName, score, timestamp);
+
       const res = await fetch('/api/leaderboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score })
+        body: JSON.stringify({ name: playerName, score, timestamp, hash })
       });
       if (res.ok) {
         setScoreSubmitted(true);

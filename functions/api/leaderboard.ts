@@ -5,12 +5,23 @@ export const onRequestGet = async (context: any) => {
   const { env } = context;
 
   try {
-    let topScores = [];
+    let topScores: {name: string, score: number}[] = [];
 
     // Prioritize Cloudflare KV if the user has bound it
     if (env.LEADERBOARD_KV) {
-      const data = await env.LEADERBOARD_KV.get("top_scores", { type: "json" });
-      topScores = (data && Array.isArray(data)) ? data : [];
+      try {
+        let textData = await env.LEADERBOARD_KV.get("top_scores", { type: "text" });
+        if (textData) {
+          if (!textData.trim().startsWith('[')) {
+            textData = `[${textData}]`; // Auto-fix missing brackets
+          }
+          const data = JSON.parse(textData);
+          topScores = Array.isArray(data) ? data : [];
+        }
+      } catch (e) {
+        console.error("KV parsing failed on GET, falling back to empty array", e);
+        topScores = [];
+      }
     } else {
       // Fallback to Edge Memory (resets across worker reloads, but works for local dev)
       topScores = mockLeaderboard;
@@ -31,21 +42,49 @@ export const onRequestPost = async (context: any) => {
 
   try {
     const body = await request.json();
-    const { name, score } = body;
+    const { name, score, timestamp, hash } = body;
 
     if (!name || typeof name !== 'string' || name.length > 20) {
       return new Response(JSON.stringify({ error: "Invalid name" }), { status: 400 });
     }
-    if (typeof score !== 'number' || score < 0) {
-      return new Response(JSON.stringify({ error: "Invalid score" }), { status: 400 });
+    if (typeof score !== 'number' || score < 0 || score > 50000) {
+      return new Response(JSON.stringify({ error: "Invalid or impossible score" }), { status: 400 });
+    }
+
+    // Time window check (2 minutes = 120000 ms)
+    const now = Date.now();
+    if (!timestamp || Math.abs(now - timestamp) > 120000) {
+      return new Response(JSON.stringify({ error: "Request expired or invalid timestamp" }), { status: 403 });
+    }
+
+    // Hash signature check (Anti-Cheat)
+    const encoder = new TextEncoder();
+    const data = encoder.encode(`${name}:${score}:${timestamp}:YEFRIS_SECRET_SALT_V1`);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const expectedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (hash !== expectedHash) {
+      return new Response(JSON.stringify({ error: "Invalid signature payload" }), { status: 403 });
     }
 
     const newEntry = { name: name.trim() || 'Anonymous', score };
     let currentLeaderboard: {name: string, score: number}[] = [];
 
     if (env.LEADERBOARD_KV) {
-      const data = await env.LEADERBOARD_KV.get("top_scores", { type: "json" });
-      currentLeaderboard = (data && Array.isArray(data)) ? data : [];
+      try {
+        let textData = await env.LEADERBOARD_KV.get("top_scores", { type: "text" });
+        if (textData) {
+          if (!textData.trim().startsWith('[')) {
+            textData = `[${textData}]`; // Auto-fix missing brackets
+          }
+          const parsedData = JSON.parse(textData);
+          currentLeaderboard = Array.isArray(parsedData) ? parsedData : [];
+        }
+      } catch (e) {
+        console.error("KV parsing failed on POST, overwriting with new valid array", e);
+        currentLeaderboard = [];
+      }
     } else {
       currentLeaderboard = [...mockLeaderboard];
     }
