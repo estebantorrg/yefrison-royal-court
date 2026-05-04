@@ -152,9 +152,12 @@ export const YefrisLaserDefense: React.FC = () => {
       if (res.ok) {
         setScoreSubmitted(true);
         fetchLeaderboard();
+      } else {
+        const errBody = await res.text();
+        console.error(`Leaderboard submit failed: ${res.status}`, errBody);
       }
     } catch(e) {
-      console.error(e);
+      console.error('Leaderboard submit exception:', e);
     } finally {
       setIsSubmittingScore(false);
     }
