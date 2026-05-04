@@ -14,12 +14,36 @@ export const ElHomunStare: React.FC = () => {
       }
     };
 
+    // Accelerometer detection
+    let initialAcc: number | null = null;
+    let baselineSet = false;
+    
+    const handleDeviceMotion = (e: DeviceMotionEvent) => {
+      if (status !== 'staring') return;
+      const acc = e.accelerationIncludingGravity;
+      if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
+      
+      const currentAcc = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+      
+      if (!baselineSet) {
+        initialAcc = currentAcc;
+        baselineSet = true;
+        return;
+      }
+      
+      // If the phone accelerates/tilts beyond 1.5 units from initial baseline, they moved.
+      if (Math.abs(currentAcc - initialAcc!) > 1.5) {
+        handleMovement();
+      }
+    };
+
     if (status === 'staring') {
       window.addEventListener('mousemove', handleMovement);
       window.addEventListener('scroll', handleMovement);
       window.addEventListener('keydown', handleMovement);
       window.addEventListener('touchstart', handleMovement);
       window.addEventListener('click', handleMovement);
+      window.addEventListener('devicemotion', handleDeviceMotion);
 
       timer = setInterval(() => {
         setTimeLeft((prev) => {
@@ -38,12 +62,24 @@ export const ElHomunStare: React.FC = () => {
       window.removeEventListener('keydown', handleMovement);
       window.removeEventListener('touchstart', handleMovement);
       window.removeEventListener('click', handleMovement);
+      window.removeEventListener('devicemotion', handleDeviceMotion);
+      
       if (timer) clearInterval(timer);
     };
   }, [status]);
 
-  const startStaring = (e: React.MouseEvent) => {
+  const startStaring = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Request permission for device motion on iOS 13+ devices
+    if (typeof (DeviceMotionEvent as any) !== 'undefined' && typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+      try {
+        await (DeviceMotionEvent as any).requestPermission();
+      } catch (err) {
+        console.warn("Device motion request blocked or denied", err);
+      }
+    }
+    
     setStatus('staring');
     setTimeLeft(30);
   };

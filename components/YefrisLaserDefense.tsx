@@ -79,16 +79,16 @@ export const YefrisLaserDefense: React.FC = () => {
   useEffect(() => {
     if (!isPlaying || gameOver || isPaused || resumeCountdown !== null) return;
 
-    // Aggressive Difficulty Scaling
-    // Base spawns at 1.5s. Every 10 points it gets 15% faster
-    const spawnRate = Math.max(250, 1500 * Math.pow(0.85, score / 10)); 
+    // Moderate Difficulty Scaling
+    // Base spawns at 1.5s. Every 10 points it gets 5% faster (was 15%), capping locally at 400ms.
+    const spawnRate = Math.max(400, 1500 * Math.pow(0.95, score / 10)); 
     
     const interval = setInterval(() => {
       const newTarget: Target = {
         id: `target-${targetIdCounter.current++}`,
         left: 10 + Math.random() * 80,
-        // Base drops in 4s. Every 10 points it falls 10% faster, up to insane 0.8s drops.
-        duration: Math.max(0.8, 4 * Math.pow(0.90, score / 10)), 
+        // Base drops in 4s. Every 10 points it falls 5% faster, capping cleanly at 1.2s.
+        duration: Math.max(1.2, 4 * Math.pow(0.95, score / 10)), 
       };
       setTargets(prev => [...prev, newTarget]);
     }, spawnRate);
