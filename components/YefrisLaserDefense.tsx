@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+// @ts-ignore
+import ricardoImg from './ricardo_obregon.jpg';
 
 type GameMode = 'survival' | 'endless';
 
@@ -80,7 +82,7 @@ export const YefrisLaserDefense: React.FC = () => {
     }
   }, [mode, gameOver, isPlaying]);
 
-  const handleShootTarget = (e: React.MouseEvent, targetId: string) => {
+  const handleShootTarget = (e: React.PointerEvent | React.MouseEvent, targetId: string) => {
     e.stopPropagation();
     if (!isPlaying || gameOver) return;
 
@@ -192,15 +194,15 @@ export const YefrisLaserDefense: React.FC = () => {
           {targets.map(target => (
             <div 
               key={target.id}
-              className="absolute top-[-60px] w-12 h-12 rounded overflow-hidden border-2 border-[#E74C3C] shadow-[0_0_15px_rgba(231,76,60,0.5)] z-10 cursor-crosshair hover:scale-110 hover:border-white transition-transform"
+              className="absolute top-[-80px] w-16 h-16 sm:w-20 sm:h-20 rounded overflow-hidden border-[3px] border-[#E74C3C] shadow-[0_0_20px_rgba(231,76,60,0.6)] z-10 cursor-crosshair hover:scale-110 hover:border-white transition-transform"
               style={{ 
                 left: `${target.left}%`,
                 animation: `dropTarget ${target.duration}s linear forwards`
               }}
-              onClick={(e) => handleShootTarget(e, target.id)}
+              onPointerDown={(e) => handleShootTarget(e, target.id)}
               onAnimationEnd={() => handleTargetMiss(target.id)}
             >
-              <img src="/ricardo_obregon.jpg" alt="Threat" className="w-full h-full object-cover grayscale opacity-80" />
+              <img src={ricardoImg} alt="Threat" className="w-full h-full object-cover grayscale opacity-80 pointer-events-none" />
             </div>
           ))}
 
