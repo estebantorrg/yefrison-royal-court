@@ -38,6 +38,7 @@ export const YefrisLaserDefense: React.FC = () => {
   const [playerName, setPlayerName] = useState("");
   const [isSubmittingScore, setIsSubmittingScore] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const targetIdCounter = useRef(0);
@@ -220,8 +221,8 @@ export const YefrisLaserDefense: React.FC = () => {
   const isFrozen = isPaused || resumeCountdown !== null;
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 mb-12 flex flex-col xl:flex-row gap-6 items-start">
-      <div className="w-full flex-grow bg-black/60 backdrop-blur-md border border-[#E74C3C]/30 rounded-xl shadow-[0_0_30px_rgba(231,76,60,0.15)] overflow-hidden">
+    <div className="w-full max-w-2xl mx-auto p-4 mb-12">
+      <div className="w-full bg-black/60 backdrop-blur-md border border-[#E74C3C]/30 rounded-xl shadow-[0_0_30px_rgba(231,76,60,0.15)] overflow-hidden">
         
         {/* Game Header */}
         <div className="bg-black/40 border-b border-[#E74C3C]/20 p-4 flex justify-between items-center relative z-20">
@@ -265,11 +266,11 @@ export const YefrisLaserDefense: React.FC = () => {
           onPointerDown={handleGameAreaPointerDown}
         >
           {/* Main Menu / Game Over Overlay */}
-          {(!isPlaying || gameOver) && (
-            <div className="absolute inset-0 z-30 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          {(!isPlaying || gameOver) && !showLeaderboard && (
+            <div className="absolute inset-0 z-30 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-fade-in overflow-y-auto">
               {gameOver ? (
                 <>
-                  <h2 className="text-5xl font-bold text-[#E74C3C] display-font mb-2 drop-shadow-[0_0_15px_rgba(231,76,60,0.8)]">SYSTEM BREACH</h2>
+                  <h2 className="text-5xl font-bold text-[#E74C3C] display-font mb-2 drop-shadow-[0_0_15px_rgba(231,76,60,0.8)] mt-8">SYSTEM BREACH</h2>
                   <p className="text-lg text-white mb-6">Final Score: <span className="text-[#F1C40F] font-bold text-2xl">{score}</span></p>
                   
                   {mode === 'survival' && score > 0 && !scoreSubmitted && (
@@ -301,14 +302,14 @@ export const YefrisLaserDefense: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <h2 className="text-4xl font-bold text-white display-font mb-4">Obliviousness <br/><span className="text-[#E74C3C]">Under Attack</span></h2>
+                  <h2 className="text-4xl font-bold text-white display-font mb-4 mt-8">Obliviousness <br/><span className="text-[#E74C3C]">Under Attack</span></h2>
                   <p className="text-white/70 mb-8 max-w-sm">
                     Ricardo Obregon's systems are dropping rapidly. Use Yefris's ocular lasers to delete them. Difficulty scales aggressively.
                   </p>
                 </>
               )}
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button 
                   onClick={() => startGame('survival')}
                   className="px-6 py-3 bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C] text-[#E74C3C] font-bold rounded uppercase tracking-wider transition-all shadow-[0_0_10px_rgba(231,76,60,0.3)] hover:shadow-[0_0_20px_rgba(231,76,60,0.6)]"
@@ -321,6 +322,46 @@ export const YefrisLaserDefense: React.FC = () => {
                 >
                   Endless Zen
                 </button>
+              </div>
+
+              <button 
+                onClick={() => setShowLeaderboard(true)}
+                className="text-[#F1C40F] hover:text-white underline tracking-widest text-sm uppercase transition-colors"
+              >
+                View Global Leaderboard
+              </button>
+            </div>
+          )}
+
+          {/* Leaderboard Overlay */}
+          {showLeaderboard && (
+            <div className="absolute inset-0 z-30 bg-black/95 backdrop-blur-md flex flex-col p-6 animate-fade-in overflow-y-auto">
+              <div className="flex justify-between items-center mb-6 border-b border-[#F1C40F]/20 pb-4 mt-4">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-[#F1C40F]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                  <h3 className="text-2xl font-bold text-[#F1C40F] display-font uppercase tracking-widest">Global Archives</h3>
+                </div>
+                <button onClick={() => setShowLeaderboard(false)} className="text-white hover:text-[#E74C3C] text-sm uppercase tracking-widest border border-white/20 hover:border-[#E74C3C] px-3 py-1 rounded transition-colors">
+                  Close
+                </button>
+              </div>
+              
+              <div className="flex-grow overflow-y-auto w-full max-w-md mx-auto pr-2 custom-scrollbar">
+                {leaderboard.length === 0 ? (
+                  <p className="text-white/40 text-center italic py-10">No records found. The archive is empty.</p>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {leaderboard.map((entry, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="font-bold text-white/90 flex items-center gap-3">
+                          <span className={`text-base ${i === 0 ? 'text-[#F1C40F]' : (i === 1 ? 'text-gray-300' : (i === 2 ? 'text-orange-400' : 'text-white/30'))}`}>#{i + 1}</span> 
+                          {entry.name}
+                        </span>
+                        <span className="text-[#F1C40F] font-mono tracking-wider">{entry.score}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -412,31 +453,6 @@ export const YefrisLaserDefense: React.FC = () => {
 
         </div>
       </div>
-
-      {/* Global Leaderboard Side Panel */}
-      <div className="w-full xl:w-80 flex-shrink-0 bg-black/60 backdrop-blur-md border border-[#F1C40F]/30 rounded-xl p-6 shadow-[0_0_20px_rgba(241,196,15,0.05)]">
-        <div className="flex items-center gap-3 mb-6 border-b border-[#F1C40F]/20 pb-4">
-          <svg className="w-6 h-6 text-[#F1C40F]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-          <h3 className="text-xl font-bold text-[#F1C40F] display-font uppercase tracking-widest">Top Records</h3>
-        </div>
-        
-        {leaderboard.length === 0 ? (
-          <p className="text-white/40 text-center italic py-10">No records found. The archive is empty.</p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {leaderboard.map((entry, i) => (
-              <div key={i} className="flex justify-between items-center p-3 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                <span className="font-bold text-white/90 flex items-center gap-3">
-                  <span className={`text-xs ${i === 0 ? 'text-[#F1C40F]' : (i === 1 ? 'text-gray-300' : (i === 2 ? 'text-orange-400' : 'text-white/30'))}`}>#{i + 1}</span> 
-                  {entry.name}
-                </span>
-                <span className="text-[#F1C40F] font-mono tracking-wider">{entry.score}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       <style>
         {`
           @keyframes dropTarget {
