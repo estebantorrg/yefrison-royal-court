@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AskYefris } from './components/AskYefris';
+import { ElHomunStare } from './components/ElHomunStare';
+import { InitiationCertificate } from './components/InitiationCertificate';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
@@ -127,6 +129,7 @@ const App = () => {
             <li><a onClick={handleLinkClick} href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
             <li><a onClick={handleLinkClick} href="#practices" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Beliefs</a></li>
             <li><a onClick={handleLinkClick} href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
+            <li><a onClick={handleLinkClick} href="#initiation" className="block text-center bg-[#2ECC71]/20 hover:bg-[#2ECC71]/40 border border-[#2ECC71]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Initiation</a></li>
             <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
             <li><a onClick={handleLinkClick} href="#ask-yefris" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
           </ul>
@@ -171,6 +174,8 @@ const App = () => {
         <p className="mt-6 text-lg leading-loose opacity-90" style={{ color: textColor }}>
           El Homun is the pioneer of self-awareness. He is the repository of all knowledge. But knowledge without a vessel is stagnant. This is the truth we proclaim: We must be like El Homun in soul, possessing silent, infinite understanding.
         </p>
+        
+        <ElHomunStare />
       </CultSection>
 
       <CultSection>
@@ -202,6 +207,10 @@ const App = () => {
             className="w-full max-w-lg rounded border border-red-500 shadow-[0_0_20px_rgba(231,76,60,0.4)]"
           />
         </div>
+      </CultSection>
+
+      <CultSection id="initiation">
+        <InitiationCertificate />
       </CultSection>
 
       <CultSection id="celebrities">
