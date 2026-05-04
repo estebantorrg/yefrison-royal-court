@@ -18,6 +18,7 @@ interface Laser {
 
 export const YefrisLaserDefense: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [mode, setMode] = useState<GameMode>('survival');
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -31,7 +32,7 @@ export const YefrisLaserDefense: React.FC = () => {
 
   // Handle Target Spawn Loop
   useEffect(() => {
-    if (!isPlaying || gameOver) return;
+    if (!isPlaying || gameOver || isPaused) return;
 
     // Difficulty increases with score (targets spawn faster)
     const spawnRate = Math.max(600, 2000 - (score * 50)); 
@@ -46,7 +47,7 @@ export const YefrisLaserDefense: React.FC = () => {
     }, spawnRate);
 
     return () => clearInterval(interval);
-  }, [isPlaying, gameOver, score]);
+  }, [isPlaying, gameOver, isPaused, score]);
 
   const startGame = (selectedMode: GameMode) => {
     setMode(selectedMode);
@@ -56,17 +57,23 @@ export const YefrisLaserDefense: React.FC = () => {
     setLasers([]);
     setGameOver(false);
     setIsPlaying(true);
+    setIsPaused(false);
     targetIdCounter.current = 0;
   };
 
-  const stopGame = () => {
+  const endGame = () => {
+    setGameOver(true);
     setIsPlaying(false);
-    setTargets([]);
-    setLasers([]);
+    setIsPaused(false);
   };
 
+  const togglePause = () => {
+    if (!isPlaying || gameOver) return;
+    setIsPaused(prev => !prev);
+  }
+
   const handleTargetMiss = useCallback((id: string) => {
-    if (gameOver || !isPlaying) return;
+    if (gameOver || !isPlaying || isPaused) return;
     
     setTargets(prev => prev.filter(t => t.id !== id));
     
@@ -80,45 +87,58 @@ export const YefrisLaserDefense: React.FC = () => {
         return newLives;
       });
     }
-  }, [mode, gameOver, isPlaying]);
+  }, [mode, gameOver, isPlaying, isPaused]);
 
-  const handleShootTarget = (e: React.PointerEvent | React.MouseEvent, targetId: string) => {
-    e.stopPropagation();
-    if (!isPlaying || gameOver) return;
+  const fireLaserVisually = (clientX: number, clientY: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    
+    const laserId = `laser-${Date.now()}`;
+    setLasers(prev => [...prev, { id: laserId, x, y }]);
+    
+    setTimeout(() => {
+      setLasers(prev => prev.filter(l => l.id !== laserId));
+    }, 150);
+  };
 
-    // Get click coords relative to container
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      const laserId = `laser-${Date.now()}`;
-      setLasers(prev => [...prev, { id: laserId, x, y }]);
-      
-      // Remove laser after brief flash
-      setTimeout(() => {
-        setLasers(prev => prev.filter(l => l.id !== laserId));
-      }, 150);
-    }
-
+  const handleShootTarget = (targetId: string, clientX: number, clientY: number) => {
+    fireLaserVisually(clientX, clientY);
     setTargets(prev => prev.filter(t => t.id !== targetId));
     setScore(prev => prev + 10);
   };
 
-  const handleMissedShot = (e: React.MouseEvent) => {
-    if (!isPlaying || gameOver) return;
-    // Visually fire a laser anyway, but no hit
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      const laserId = `laser-${Date.now()}`;
-      setLasers(prev => [...prev, { id: laserId, x, y }]);
-      
-      setTimeout(() => {
-        setLasers(prev => prev.filter(l => l.id !== laserId));
-      }, 150);
+  const handleMissedShot = (clientX: number, clientY: number) => {
+    fireLaserVisually(clientX, clientY);
+  };
+
+  const handleGameAreaPointerDown = (e: React.PointerEvent) => {
+    if (!isPlaying || gameOver || isPaused) return;
+    
+    let hitTargetId: string | null = null;
+    const targetEls = document.querySelectorAll('[data-target-id]');
+    
+    // Massive aim assist: 40px in every direction
+    const HIT_ASSIST = 40; 
+    
+    for (let i = 0; i < targetEls.length; i++) {
+        const rect = targetEls[i].getBoundingClientRect();
+        if (
+            e.clientX >= rect.left - HIT_ASSIST &&
+            e.clientX <= rect.right + HIT_ASSIST &&
+            e.clientY >= rect.top - HIT_ASSIST &&
+            e.clientY <= rect.bottom + HIT_ASSIST
+        ) {
+            hitTargetId = targetEls[i].getAttribute('data-target-id');
+            break;
+        }
+    }
+    
+    if (hitTargetId) {
+        handleShootTarget(hitTargetId, e.clientX, e.clientY);
+    } else {
+        handleMissedShot(e.clientX, e.clientY);
     }
   };
 
@@ -129,7 +149,17 @@ export const YefrisLaserDefense: React.FC = () => {
         {/* Game Header */}
         <div className="bg-black/40 border-b border-[#E74C3C]/20 p-4 flex justify-between items-center relative z-20">
           <div>
-            <h3 className="text-xl font-bold text-[#E74C3C] display-font uppercase tracking-wider">Yefris Defense</h3>
+            <h3 className="text-xl font-bold text-[#E74C3C] display-font uppercase tracking-wider flex items-center gap-3">
+              Yefris Defense
+              {isPlaying && !gameOver && (
+                <button 
+                  onClick={togglePause}
+                  className="text-xs bg-white/10 hover:bg-white/20 border border-white/20 px-2 py-1 rounded tracking-widest text-white transition-colors"
+                >
+                  {isPaused ? 'RESUME' : 'PAUSE'}
+                </button>
+              )}
+            </h3>
             <p className="text-xs text-white/50">{mode === 'survival' ? 'Survival Mode' : 'Endless Mode'}</p>
           </div>
           <div className="flex gap-6 items-center">
@@ -142,7 +172,7 @@ export const YefrisLaserDefense: React.FC = () => {
                 <p className="text-xs text-[#E74C3C] uppercase tracking-widest">Lives</p>
                 <div className="flex gap-1 justify-center mt-1">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className={`w-3 h-3 rounded-full ${i < lives ? 'bg-[#E74C3C] shadow-[0_0_8px_#E74C3C]' : 'bg-white/10'}`} />
+                    <div key={i} className={`w-3 h-3 rounded-full transition-colors ${i < lives ? 'bg-[#E74C3C] shadow-[0_0_8px_#E74C3C]' : 'bg-white/10'}`} />
                   ))}
                 </div>
               </div>
@@ -153,10 +183,10 @@ export const YefrisLaserDefense: React.FC = () => {
         {/* Game Area */}
         <div 
           ref={containerRef}
-          className={`relative w-full h-[450px] overflow-hidden bg-gradient-to-b from-black to-[#110505] transition-all duration-300 ${isPlaying && !gameOver ? 'cursor-crosshair' : ''}`}
-          onClick={handleMissedShot}
+          className={`relative w-full h-[450px] overflow-hidden bg-gradient-to-b from-black to-[#110505] transition-all duration-300 ${(isPlaying && !gameOver && !isPaused) ? 'cursor-crosshair' : ''}`}
+          onPointerDown={handleGameAreaPointerDown}
         >
-          {/* Menu Overlay */}
+          {/* Main Menu / Game Over Overlay */}
           {(!isPlaying || gameOver) && (
             <div className="absolute inset-0 z-30 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
               {gameOver ? (
@@ -176,7 +206,7 @@ export const YefrisLaserDefense: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button 
                   onClick={() => startGame('survival')}
-                  className="px-6 py-3 bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C] text-[#E74C3C] font-bold rounded uppercase tracking-wider transition-all"
+                  className="px-6 py-3 bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C] text-[#E74C3C] font-bold rounded uppercase tracking-wider transition-all shadow-[0_0_10px_rgba(231,76,60,0.3)] hover:shadow-[0_0_20px_rgba(231,76,60,0.6)]"
                 >
                   {gameOver ? 'Play Again (Survival)' : 'Survival (3 Lives)'}
                 </button>
@@ -190,27 +220,49 @@ export const YefrisLaserDefense: React.FC = () => {
             </div>
           )}
 
+          {/* Pause Menu Overlay */}
+          {(isPlaying && isPaused) && (
+            <div className="absolute inset-0 z-30 bg-black/50 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+              <h2 className="text-4xl font-bold text-white tracking-widest mb-8">PAUSED</h2>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={togglePause}
+                  className="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white text-white font-bold rounded uppercase tracking-wider transition-all hover:scale-105"
+                >
+                  Continue
+                </button>
+                <button 
+                  onClick={endGame}
+                  className="px-8 py-3 bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C] text-[#E74C3C] font-bold rounded uppercase tracking-wider transition-all hover:scale-105"
+                >
+                  End Game
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Falling Targets */}
           {targets.map(target => (
             <div 
               key={target.id}
-              className="absolute top-[-80px] w-16 h-16 sm:w-20 sm:h-20 rounded overflow-hidden border-[3px] border-[#E74C3C] shadow-[0_0_20px_rgba(231,76,60,0.6)] z-10 cursor-crosshair hover:scale-110 hover:border-white transition-transform"
+              data-target-id={target.id}
+              className="absolute top-[-80px] w-16 h-16 sm:w-20 sm:h-20 rounded overflow-hidden border-[3px] border-[#E74C3C] shadow-[0_0_20px_rgba(231,76,60,0.6)] z-10 transition-transform"
               style={{ 
                 left: `${target.left}%`,
-                animation: `dropTarget ${target.duration}s linear forwards`
+                animation: `dropTarget ${target.duration}s linear forwards`,
+                animationPlayState: isPaused ? 'paused' : 'running'
               }}
-              onPointerDown={(e) => handleShootTarget(e, target.id)}
               onAnimationEnd={() => handleTargetMiss(target.id)}
             >
-              <img src={ricardoImg} alt="Threat" className="w-full h-full object-cover grayscale opacity-80 pointer-events-none" />
+              <img src={ricardoImg} alt="Threat" className="w-full h-full object-cover grayscale opacity-80 pointer-events-none select-none" draggable={false} />
             </div>
           ))}
 
           {/* Laser Beams */}
           {lasers.map(laser => {
-            // Calculate angle and distance from Yefris (bottom center) to click target
             const startX = containerRef.current?.offsetWidth ? containerRef.current.offsetWidth / 2 : 300;
-            const startY = 400; // Yefris Y pos approx
+            const startY = 400; 
             const length = Math.sqrt(Math.pow(laser.x - startX, 2) + Math.pow(laser.y - startY, 2));
             const angle = Math.atan2(laser.y - startY, laser.x - startX) * (180 / Math.PI);
 
@@ -234,8 +286,7 @@ export const YefrisLaserDefense: React.FC = () => {
 
           {/* Yefris Turret Image */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-            {/* Pulsing aura when playing */}
-            {isPlaying && !gameOver && (
+            {isPlaying && !gameOver && !isPaused && (
               <div className="absolute inset-0 bg-[#E74C3C] blur-2xl rounded-full opacity-20 animate-pulse" />
             )}
             <img 
@@ -250,7 +301,7 @@ export const YefrisLaserDefense: React.FC = () => {
       <style>
         {`
           @keyframes dropTarget {
-            0% { top: -60px; transform: rotate(0deg); opacity: 0; }
+            0% { top: -80px; transform: rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { top: 450px; transform: rotate(180deg); opacity: 0; }
