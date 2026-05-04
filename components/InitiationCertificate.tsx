@@ -158,8 +158,9 @@ export const InitiationCertificate: React.FC = () => {
             justifyContent: 'center',
             marginBottom: '40px',
             background: 'radial-gradient(circle, rgba(241,196,15,0.2) 0%, transparent 70%)',
+            overflow: 'hidden',
           }}>
-            <span style={{ color: '#F1C40F', fontSize: '60px', fontFamily: "'Cinzel', serif" }}>Ye</span>
+            <img src="/dog.png" alt="Yefris" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           <h2 style={{ color: '#E67E22', fontSize: '24px', letterSpacing: '8px', textTransform: 'uppercase', marginBottom: '16px', fontWeight: 'bold' }}>
