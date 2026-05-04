@@ -12,6 +12,41 @@ const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: st
   </section>
 );
 
+const CultExaminationsModule = () => {
+  const [activeGame, setActiveGame] = useState<'menu' | 'homun' | 'defense'>('menu');
+
+  if (activeGame === 'homun') {
+    return (
+      <div className="w-full relative mt-12">
+        <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#85C1E9] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
+        <ElHomunStare />
+      </div>
+    );
+  }
+
+  if (activeGame === 'defense') {
+    return (
+      <div className="w-full relative mt-12">
+        <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#E74C3C] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
+        <YefrisLaserDefense />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto mt-8">
+      <div onClick={() => setActiveGame('homun')} className="cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] p-8 rounded-xl transition-all hover:bg-[#85C1E9]/10 text-center flex flex-col items-center justify-center min-h-[250px]">
+        <h3 className="text-2xl text-[#85C1E9] display-font mb-4 group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
+        <p className="text-white/70 text-sm">Test your soul's synchronization. Can you remain perfectly still?</p>
+      </div>
+      <div onClick={() => setActiveGame('defense')} className="cursor-pointer group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] p-8 rounded-xl transition-all hover:bg-[#E74C3C]/10 text-center flex flex-col items-center justify-center min-h-[250px]">
+        <h3 className="text-2xl text-[#E74C3C] display-font mb-4 group-hover:scale-105 transition-transform">Yefris Laser Defense</h3>
+        <p className="text-white/70 text-sm">Test your ocular reflexes. Eliminate the obsolete anomalies.</p>
+      </div>
+    </div>
+  );
+};
+
 const App = () => {
   const [hasReachedVideo, setHasReachedVideo] = useState(false);
   const [scrollP, setScrollP] = useState(0);
@@ -196,18 +231,12 @@ const App = () => {
       </CultSection>
 
       <CultSection id="minigames">
-        <h2 className="display-font text-4xl mb-8" style={{ color: '#9B59B6' }}>Cult Examinations</h2>
-        <p className="text-xl mb-12 leading-relaxed" style={{ color: textColor }}>
+        <h2 className="display-font text-4xl mb-4" style={{ color: '#9B59B6' }}>Cult Examinations</h2>
+        <p className="text-xl mb-4 leading-relaxed" style={{ color: textColor }}>
           Test your synchronization with the Yefris-El Homun Theory of Mind. 
         </p>
         
-        <ElHomunStare />
-        
-        <div className="my-12 w-full h-[1px] bg-white/10 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#050505] px-4 text-white/30 tracking-widest text-sm uppercase">OR</div>
-        </div>
-
-        <YefrisLaserDefense />
+        <CultExaminationsModule />
       </CultSection>
 
       <CultSection id="military">

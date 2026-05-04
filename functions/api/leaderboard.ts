@@ -50,11 +50,17 @@ export const onRequestPost = async (context: any) => {
       currentLeaderboard = [...mockLeaderboard];
     }
 
-    // Insert and sort (descending)
-    currentLeaderboard.push(newEntry);
+    // Insert or update existing score (keep highest)
+    const existingIndex = currentLeaderboard.findIndex(e => e.name.toLowerCase() === newEntry.name.toLowerCase());
+    if (existingIndex !== -1) {
+      if (newEntry.score > currentLeaderboard[existingIndex].score) {
+        currentLeaderboard[existingIndex] = newEntry;
+      }
+    } else {
+      currentLeaderboard.push(newEntry);
+    }
+
     currentLeaderboard.sort((a, b) => b.score - a.score);
-    
-    // Keep top 10
     currentLeaderboard = currentLeaderboard.slice(0, 10);
 
     // Save
