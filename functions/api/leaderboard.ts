@@ -9,8 +9,8 @@ export const onRequestGet = async (context: any) => {
 
     // Prioritize Cloudflare KV if the user has bound it
     if (env.LEADERBOARD_KV) {
-      const data = await env.LEADERBOARD_KV.get("top_scores", "json");
-      topScores = data || [];
+      const data = await env.LEADERBOARD_KV.get("top_scores", { type: "json" });
+      topScores = (data && Array.isArray(data)) ? data : [];
     } else {
       // Fallback to Edge Memory (resets across worker reloads, but works for local dev)
       topScores = mockLeaderboard;
@@ -44,8 +44,8 @@ export const onRequestPost = async (context: any) => {
     let currentLeaderboard: {name: string, score: number}[] = [];
 
     if (env.LEADERBOARD_KV) {
-      const data = await env.LEADERBOARD_KV.get("top_scores", "json");
-      currentLeaderboard = data || [];
+      const data = await env.LEADERBOARD_KV.get("top_scores", { type: "json" });
+      currentLeaderboard = (data && Array.isArray(data)) ? data : [];
     } else {
       currentLeaderboard = [...mockLeaderboard];
     }
