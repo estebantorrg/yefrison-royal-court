@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AskYefris } from './components/AskYefris';
 import { ElHomunStare } from './components/ElHomunStare';
 import { InitiationCertificate } from './components/InitiationCertificate';
+import { YefrisLaserDefense } from './components/YefrisLaserDefense';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
@@ -128,6 +129,7 @@ const App = () => {
             <li><a onClick={handleLinkClick} href="#cult" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Cult</a></li>
             <li><a onClick={handleLinkClick} href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
             <li><a onClick={handleLinkClick} href="#practices" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Beliefs</a></li>
+            <li><a onClick={handleLinkClick} href="#minigames" className="block text-center bg-[#9B59B6]/20 hover:bg-[#9B59B6]/40 border border-[#9B59B6]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Minigames</a></li>
             <li><a onClick={handleLinkClick} href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
             <li><a onClick={handleLinkClick} href="#initiation" className="block text-center bg-[#2ECC71]/20 hover:bg-[#2ECC71]/40 border border-[#2ECC71]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Initiation</a></li>
             <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
@@ -174,8 +176,6 @@ const App = () => {
         <p className="mt-6 text-lg leading-loose opacity-90" style={{ color: textColor }}>
           El Homun is the pioneer of self-awareness. He is the repository of all knowledge. But knowledge without a vessel is stagnant. This is the truth we proclaim: We must be like El Homun in soul, possessing silent, infinite understanding.
         </p>
-        
-        <ElHomunStare />
       </CultSection>
 
       <CultSection>
@@ -193,6 +193,21 @@ const App = () => {
         <p className="text-xl leading-relaxed" style={{ color: textColor }}>
           We believe in the ultimate alignment of flesh and soul. To practice Yefris is to let go of unnecessary worries, to embrace joy indiscriminately, and to remain fundamentally oblivious to that which does not serve your success. The soul, anchored by El Homun, watches over these pursuits in quiet reflection.
         </p>
+      </CultSection>
+
+      <CultSection id="minigames">
+        <h2 className="display-font text-4xl mb-8" style={{ color: '#9B59B6' }}>Cult Examinations</h2>
+        <p className="text-xl mb-12 leading-relaxed" style={{ color: textColor }}>
+          Test your synchronization with the Yefris-El Homun Theory of Mind. 
+        </p>
+        
+        <ElHomunStare />
+        
+        <div className="my-12 w-full h-[1px] bg-white/10 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#050505] px-4 text-white/30 tracking-widest text-sm uppercase">OR</div>
+        </div>
+
+        <YefrisLaserDefense />
       </CultSection>
 
       <CultSection id="military">
