@@ -3,6 +3,7 @@ import { AskYefris } from './components/AskYefris';
 import { ElHomunStare } from './components/ElHomunStare';
 import { InitiationCertificate } from './components/InitiationCertificate';
 import { YefrisLaserDefense } from './components/YefrisLaserDefense';
+import { WoofsPerSecond } from './components/WoofsPerSecond';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
@@ -13,7 +14,7 @@ const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: st
 );
 
 const CultExaminationsModule = () => {
-  const [activeGame, setActiveGame] = useState<'menu' | 'homun' | 'defense'>('menu');
+  const [activeGame, setActiveGame] = useState<'menu' | 'homun' | 'defense' | 'woofs'>('menu');
 
   if (activeGame === 'homun') {
     return (
@@ -33,15 +34,28 @@ const CultExaminationsModule = () => {
     );
   }
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto mt-8">
-      <div onClick={() => setActiveGame('homun')} className="cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] p-8 rounded-xl transition-all hover:bg-[#85C1E9]/10 text-center flex flex-col items-center justify-center min-h-[250px]">
-        <h3 className="text-2xl text-[#85C1E9] display-font mb-4 group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
-        <p className="text-white/70 text-sm">Test your soul's synchronization. Can you remain perfectly still?</p>
+  if (activeGame === 'woofs') {
+    return (
+      <div className="w-full relative mt-12">
+        <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#F1C40F] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
+        <WoofsPerSecond />
       </div>
-      <div onClick={() => setActiveGame('defense')} className="cursor-pointer group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] p-8 rounded-xl transition-all hover:bg-[#E74C3C]/10 text-center flex flex-col items-center justify-center min-h-[250px]">
-        <h3 className="text-2xl text-[#E74C3C] display-font mb-4 group-hover:scale-105 transition-transform">Yefris Laser Defense</h3>
-        <p className="text-white/70 text-sm">Test your ocular reflexes. Eliminate the obsolete anomalies.</p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto mt-8">
+      <div onClick={() => setActiveGame('homun')} className="cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] p-8 rounded-xl transition-all hover:bg-[#85C1E9]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
+        <h3 className="text-xl text-[#85C1E9] display-font mb-3 group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
+        <p className="text-white/70 text-xs">Test your soul's synchronization. Can you remain perfectly still?</p>
+      </div>
+      <div onClick={() => setActiveGame('defense')} className="cursor-pointer group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] p-8 rounded-xl transition-all hover:bg-[#E74C3C]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
+        <h3 className="text-xl text-[#E74C3C] display-font mb-3 group-hover:scale-105 transition-transform">Yefris Laser Defense</h3>
+        <p className="text-white/70 text-xs">Test your ocular reflexes. Eliminate the obsolete anomalies.</p>
+      </div>
+      <div onClick={() => setActiveGame('woofs')} className="cursor-pointer group bg-black/40 border border-[#F1C40F]/30 hover:border-[#F1C40F] p-8 rounded-xl transition-all hover:bg-[#F1C40F]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
+        <h3 className="text-xl text-[#F1C40F] display-font mb-3 group-hover:scale-105 transition-transform">Woofs Per Minute</h3>
+        <p className="text-white/70 text-xs">Transcribe sacred cult scriptures. How fast can your devotion flow?</p>
       </div>
     </div>
   );
