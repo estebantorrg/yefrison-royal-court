@@ -81,6 +81,10 @@ export const WoofsPerSecond: React.FC = () => {
     if (status !== 'playing') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't steal input from other interactive elements (Oracle chat, etc.)
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) return;
+
       // Ignore modifier combos, function keys, etc.
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 

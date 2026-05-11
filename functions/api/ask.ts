@@ -229,8 +229,12 @@ export const onRequestPost = async (context: any) => {
         await writer.close();
       } catch (error: any) {
         console.error("Stream generation error:", error);
-        await writeSSE({ type: "error", error: error?.message || "Internal server error" });
-        await writer.close();
+        try {
+          await writeSSE({ type: "error", error: error?.message || "Internal server error" });
+          await writer.close();
+        } catch (_) {
+          // Writer may already be closed
+        }
       }
     })());
 

@@ -83,6 +83,7 @@ export const InitiationCertificate: React.FC = () => {
               setTitle(TITLES[Math.floor(Math.random() * TITLES.length)]); // Re-roll title on new name
             }}
             className="flex-1 bg-black/50 border border-[#F1C40F]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F1C40F] transition-colors"
+            maxLength={30}
           />
           <button 
             onClick={generateImage}

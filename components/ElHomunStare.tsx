@@ -4,12 +4,16 @@ export const ElHomunStare: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'staring' | 'failed' | 'success'>('idle');
   const [timeLeft, setTimeLeft] = useState(30);
   const containerRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef(status);
+
+  // Keep ref in sync
+  useEffect(() => { statusRef.current = status; }, [status]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
     const handleMovement = () => {
-      if (status === 'staring') {
+      if (statusRef.current === 'staring') {
         setStatus('failed');
       }
     };
@@ -19,7 +23,7 @@ export const ElHomunStare: React.FC = () => {
     let baselineSet = false;
     
     const handleDeviceMotion = (e: DeviceMotionEvent) => {
-      if (status !== 'staring') return;
+      if (statusRef.current !== 'staring') return;
       const acc = e.accelerationIncludingGravity;
       if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
       

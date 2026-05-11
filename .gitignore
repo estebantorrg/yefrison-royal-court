@@ -31,3 +31,6 @@ error.log
 
 # Local Netlify folder
 .netlify
+
+# Test scripts with secrets
+test-gemini.mjs

@@ -171,7 +171,19 @@ export const AskYefris: React.FC = () => {
 
   useEffect(() => {
     if (sessions.length > 0) {
-      localStorage.setItem('yefris_chat_sessions', JSON.stringify(sessions));
+      try {
+        localStorage.setItem('yefris_chat_sessions', JSON.stringify(sessions));
+      } catch (e) {
+        // Storage quota exceeded — prune oldest sessions and retry
+        console.warn('localStorage quota exceeded, pruning old sessions');
+        const pruned = sessions.slice(0, Math.max(5, Math.ceil(sessions.length / 2)));
+        try {
+          localStorage.setItem('yefris_chat_sessions', JSON.stringify(pruned));
+        } catch (_) {
+          // Still failing — clear it entirely
+          localStorage.removeItem('yefris_chat_sessions');
+        }
+      }
     }
   }, [sessions]);
 
