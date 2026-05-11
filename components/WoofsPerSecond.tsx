@@ -31,11 +31,9 @@ export const WoofsPerSecond: React.FC = () => {
   const [passage, setPassage] = useState('');
   const [typed, setTyped] = useState('');
   const [timeLeft, setTimeLeft] = useState(DURATION);
-  // Track cursor position separately for better handling
-  const [cursorPos, setCursorPos] = useState(0);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const typedRef = useRef<string>(''); // keep a ref in sync for keydown handler
 
   const pickPassage = useCallback(() => {
     const idx = Math.floor(Math.random() * PASSAGES.length);
@@ -46,12 +44,9 @@ export const WoofsPerSecond: React.FC = () => {
     const p = pickPassage();
     setPassage(p);
     setTyped('');
-    setCursorPos(0);
+    typedRef.current = '';
     setTimeLeft(DURATION);
     setStatus('playing');
-    startTimeRef.current = Date.now();
-    
-    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   // Timer
@@ -76,20 +71,41 @@ export const WoofsPerSecond: React.FC = () => {
   // Check completion
   useEffect(() => {
     if (status === 'playing' && typed.length === passage.length && passage.length > 0) {
-      // Check if user actually finished typing the whole passage
       setStatus('finished');
       if (timerRef.current) clearInterval(timerRef.current);
     }
   }, [typed, passage, status]);
 
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // Direct keydown handler — no hidden textarea needed
+  useEffect(() => {
     if (status !== 'playing') return;
-    const val = e.target.value;
-    // Don't allow typing beyond passage length
-    if (val.length > passage.length) return;
-    setTyped(val);
-    setCursorPos(val.length);
-  };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore modifier combos, function keys, etc.
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        const next = typedRef.current.slice(0, -1);
+        typedRef.current = next;
+        setTyped(next);
+        return;
+      }
+
+      // Only accept single printable characters
+      if (e.key.length !== 1) return;
+      e.preventDefault();
+
+      if (typedRef.current.length >= passage.length) return;
+
+      const next = typedRef.current + e.key;
+      typedRef.current = next;
+      setTyped(next);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [status, passage]);
 
   // Calculate stats
   const getStats = () => {
@@ -116,23 +132,21 @@ export const WoofsPerSecond: React.FC = () => {
 
   // Render the passage with character-by-character coloring
   const renderPassage = () => {
-    return passage.split('').map((char, i) => {
+    const chars = passage.split('').map((char, i) => {
       let className = 'text-white/25'; // untyped
       if (i < typed.length) {
         className = typed[i] === char ? 'text-[#2ECC71]' : 'text-[#E74C3C] bg-[#E74C3C]/20 rounded-sm';
       }
-      // Cursor
-      const isCursor = i === cursorPos && status === 'playing';
+      // Cursor: subtle underline on the next character to type
+      const isCursor = i === typed.length && status === 'playing';
       
       return (
-        <span key={i} className={`${className} relative transition-colors duration-75`}>
-          {isCursor && (
-            <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#F1C40F] animate-pulse" />
-          )}
+        <span key={i} className={`${className} ${isCursor ? 'border-b-2 border-[#F1C40F]' : ''}`}>
           {char}
         </span>
       );
     });
+    return chars;
   };
 
   // Timer bar color
@@ -218,27 +232,15 @@ export const WoofsPerSecond: React.FC = () => {
 
               {/* Passage display */}
               <div 
-                className="font-mono text-lg leading-relaxed p-4 rounded-lg bg-black/40 border border-white/10 mb-4 select-none cursor-text min-h-[150px]"
-                onClick={() => inputRef.current?.focus()}
+                ref={containerRef}
+                className="font-mono text-lg leading-relaxed p-4 rounded-lg bg-black/40 border border-white/10 mb-4 select-none min-h-[150px] focus:outline-none focus:border-[#F1C40F]/40"
+                tabIndex={0}
               >
                 {renderPassage()}
               </div>
 
-              {/* Hidden textarea input */}
-              <textarea
-                ref={inputRef}
-                value={typed}
-                onChange={handleInput}
-                className="opacity-0 absolute w-0 h-0 pointer-events-auto"
-                autoFocus
-                autoCapitalize="off"
-                autoCorrect="off"
-                autoComplete="off"
-                spellCheck={false}
-              />
-
               <p className="text-center text-white/30 text-xs uppercase tracking-widest mt-2">
-                {typed.length === 0 ? 'Start typing to begin...' : `${typed.length} / ${passage.length} characters`}
+                {typed.length === 0 ? 'Start typing...' : `${typed.length} / ${passage.length} characters`}
               </p>
             </div>
           )}
