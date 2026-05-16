@@ -14,13 +14,12 @@ interface Pipe {
 }
 
 export const YefrisFlappyCult: React.FC = () => {
+  // UI Render states
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
-  
-  // Game states
   const [playerY, setPlayerY] = useState(50);
-  const [velocity, setVelocity] = useState(0);
+  const [playerRot, setPlayerRot] = useState(0);
   const [pipes, setPipes] = useState<Pipe[]>([]);
   
   // Leaderboard states
@@ -31,9 +30,20 @@ export const YefrisFlappyCult: React.FC = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
 
+  // Physics Engine Refs (Mutable for RequestAnimationFrame)
+  const engine = useRef({
+    isPlaying: false,
+    gameOver: false,
+    y: 50,
+    v: 0,
+    score: 0,
+    pipes: [] as Pipe[],
+    pipeIdCounter: 0,
+    lastTime: undefined as number | undefined,
+    lastSpawnTime: 0
+  });
+
   const requestRef = useRef<number | undefined>(undefined);
-  const lastTimeRef = useRef<number | undefined>(undefined);
-  const pipeIdCounter = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Constants
@@ -68,11 +78,11 @@ export const YefrisFlappyCult: React.FC = () => {
     }
   }, [isPlaying, gameOver]);
 
-  // Jump logic
+  // Jump logic updates the synchronous engine state
   const handleJump = useCallback(() => {
-    if (!isPlaying || gameOver) return;
-    setVelocity(JUMP_STRENGTH);
-  }, [isPlaying, gameOver]);
+    if (!engine.current.isPlaying || engine.current.gameOver) return;
+    engine.current.v = JUMP_STRENGTH;
+  }, []);
 
   // Input listeners
   useEffect(() => {
@@ -87,14 +97,27 @@ export const YefrisFlappyCult: React.FC = () => {
   }, [handleJump]);
 
   const startGame = async () => {
-    setScore(0);
-    setPlayerY(50);
-    setVelocity(0);
-    setPipes([]);
-    pipeIdCounter.current = 0;
-    setGameOver(false);
     setIsPlaying(true);
+    setGameOver(false);
     setScoreSubmitted(false);
+
+    // Reset Engine State
+    engine.current = {
+      isPlaying: true,
+      gameOver: false,
+      y: 50,
+      v: 0,
+      score: 0,
+      pipes: [],
+      pipeIdCounter: 0,
+      lastTime: undefined,
+      lastSpawnTime: performance.now()
+    };
+    
+    // Sync UI
+    setPlayerY(50);
+    setScore(0);
+    setPipes([]);
 
     try {
       const res = await fetch('/api/game-session', { method: 'POST' });
@@ -105,127 +128,99 @@ export const YefrisFlappyCult: React.FC = () => {
     } catch (e) {
       console.warn('Failed to get game session');
     }
+    
+    // Start loop
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    requestRef.current = requestAnimationFrame(gameLoop);
   };
 
-  // Main Game Loop using requestAnimationFrame for smooth physics
-  const updateGame = useCallback((time: number) => {
-    if (!isPlaying || gameOver) return;
+  const gameLoop = useCallback((time: number) => {
+    const state = engine.current;
+    if (!state.isPlaying || state.gameOver) return;
 
-    // Delta time normalization
-    if (lastTimeRef.current !== undefined) {
-      const deltaTime = time - lastTimeRef.current;
-      
-      // We process physics in fixed steps or just scale by a base 16ms frame
+    if (state.lastTime !== undefined) {
+      const deltaTime = time - state.lastTime;
       const timeScale = Math.min(deltaTime / 16, 2); 
 
       // 1. Update Physics
-      setPlayerY(prevY => {
-        setVelocity(prevV => {
-          const nextV = prevV + (GRAVITY * timeScale);
-          const nextY = prevY + (nextV * timeScale);
-          
-          // Floor / Ceiling Collision
-          if (nextY >= 95 || nextY <= -5) {
-            setGameOver(true);
-            setIsPlaying(false);
-          }
-          return nextV;
-        });
-        return prevY;
-      });
+      state.v += GRAVITY * timeScale;
+      state.y += state.v * timeScale;
+
+      // Floor / Ceiling Collision
+      if (state.y >= 95 || state.y <= -5) {
+        state.gameOver = true;
+        state.isPlaying = false;
+        setIsPlaying(false);
+        setGameOver(true);
+        return; // physics stop
+      }
 
       // 2. Update Pipes
-      setPipes(currentPipes => {
-        let newPipes = currentPipes.map(p => ({
-          ...p,
-          x: p.x - (PIPE_SPEED * timeScale)
-        }));
+      state.pipes = state.pipes.map(p => ({
+        ...p,
+        x: p.x - (PIPE_SPEED * timeScale)
+      })).filter(p => p.x > -20); // remove offscreen
 
-        // Remove offscreen
-        newPipes = newPipes.filter(p => p.x > -20);
-        
-        // 3. Collision and Scoring Layer
-        setPlayerY(py => {
-          for (let p of newPipes) {
-            // Check scoring
-            if (!p.passed && p.x + PIPE_WIDTH < PLAYER_X) {
-              p.passed = true;
-              setScore(s => s + 1);
-            }
-
-            // AABB Collision bounds
-            const overlapX = (PLAYER_X < p.x + PIPE_WIDTH) && (PLAYER_X + PLAYER_WIDTH > p.x);
-            if (overlapX) {
-              const hitTop = py < p.topHeight;
-              const hitBottom = py + PLAYER_HEIGHT > p.bottomY;
-              if (hitTop || hitBottom) {
-                setGameOver(true);
-                setIsPlaying(false);
-              }
-            }
-          }
-          return py;
-        });
-
-        return newPipes;
-      });
-    }
-
-    lastTimeRef.current = time;
-    if (isPlaying && !gameOver) {
-      requestRef.current = requestAnimationFrame(updateGame);
-    }
-  }, [isPlaying, gameOver]);
-
-  // Start Animation Loop
-  useEffect(() => {
-    if (isPlaying && !gameOver) {
-      requestRef.current = requestAnimationFrame(updateGame);
-    }
-    return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, [isPlaying, gameOver, updateGame]);
-
-  // Wipe last time ref on pause/stop so it doesn't jump
-  useEffect(() => {
-    if (!isPlaying) {
-      lastTimeRef.current = undefined;
-    }
-  }, [isPlaying]);
-
-  // Pipe Spawner
-  useEffect(() => {
-    if (!isPlaying || gameOver) return;
-
-    const spawnPipe = () => {
-      // Dynamic scaling speed as score goes up
-      const spawnRate = Math.max(800, PIPE_SPAWN_RATE * Math.pow(0.98, score));
-      
-      setTimeout(() => {
-        if (!isPlaying || gameOver) return;
-        
-        // Calculate gap placement safely
+      // 3. Spawner
+      const dynamicSpawnRate = Math.max(800, PIPE_SPAWN_RATE * Math.pow(0.98, state.score));
+      if (time - state.lastSpawnTime > dynamicSpawnRate) {
         const minHeight = 15;
         const maxTop = 100 - GAP_SIZE - minHeight;
         const topH = Math.max(minHeight, Math.random() * maxTop);
         const botY = topH + GAP_SIZE;
 
-        pipeIdCounter.current += 1;
-        setPipes(prev => [...prev, {
-          id: pipeIdCounter.current,
-          x: 100, // spawn at edge
+        state.pipeIdCounter += 1;
+        state.pipes.push({
+          id: state.pipeIdCounter,
+          x: 100,
           topHeight: topH,
           bottomY: botY,
           passed: false
-        }]);
+        });
+        state.lastSpawnTime = time;
+      }
 
-        spawnPipe();
-      }, spawnRate);
+      // 4. Collision and Scoring Layer
+      for (let p of state.pipes) {
+        // Scoring
+        if (!p.passed && p.x + PIPE_WIDTH < PLAYER_X) {
+          p.passed = true;
+          state.score += 1;
+        }
+
+        // AABB Collision
+        const overlapX = (PLAYER_X < p.x + PIPE_WIDTH) && (PLAYER_X + PLAYER_WIDTH > p.x);
+        if (overlapX) {
+          // Add a small forgivness margin (1%) to hitboxes
+          const hitTop = state.y < p.topHeight - 1;
+          const hitBottom = state.y + PLAYER_HEIGHT > p.bottomY + 1;
+          if (hitTop || hitBottom) {
+            state.gameOver = true;
+            state.isPlaying = false;
+            setIsPlaying(false);
+            setGameOver(true);
+            return;
+          }
+        }
+      }
+
+      // 5. Sync state to UI smoothly
+      setPlayerY(state.y);
+      setPlayerRot(Math.max(-20, Math.min(45, state.v * 15)));
+      setPipes([...state.pipes]);
+      setScore(state.score);
+    }
+
+    state.lastTime = time;
+    requestRef.current = requestAnimationFrame(gameLoop);
+  }, []);
+
+  // Wipe last time ref on unmounting
+  useEffect(() => {
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-
-    spawnPipe();
-  }, [isPlaying, gameOver, score]); // re-binds safely because inner timeout checks isPlaying
+  }, []);
 
   const submitScore = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,9 +247,6 @@ export const YefrisFlappyCult: React.FC = () => {
       setIsSubmittingScore(false);
     }
   };
-
-  // Rotation logic purely visual based on velocity
-  const playerRotation = Math.max(-20, Math.min(45, velocity * 15));
 
   return (
     <div 
@@ -336,7 +328,7 @@ export const YefrisFlappyCult: React.FC = () => {
               top: `${playerY}%`,
               width: `${PLAYER_WIDTH}%`,
               height: `${PLAYER_HEIGHT}%`,
-              transform: `rotate(${playerRotation}deg)`,
+              transform: `rotate(${playerRot}deg)`,
               transition: 'transform 0.1s linear' // smooth rotation only
             }}
           >
@@ -417,7 +409,7 @@ export const YefrisFlappyCult: React.FC = () => {
 
           <div className="flex gap-4">
              <button 
-                onClick={() => { setGameOver(false); setIsPlaying(false); setShowLeaderboard(true); fetchLeaderboard(); }}
+                onClick={() => { setGameOver(false); setShowLeaderboard(true); fetchLeaderboard(); }}
                 className="px-6 py-3 border border-white/20 text-white hover:bg-white/10 transition-colors uppercase tracking-widest text-xs font-bold rounded"
               >
                 Leaderboard
