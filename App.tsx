@@ -10,7 +10,7 @@ import GamesPage from './pages/GamesPage';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
-    <div className="w-full max-w-4xl mx-auto bg-black/50 backdrop-blur-md border border-white/10 p-10 md:p-16 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg text-center transform hover:scale-[1.02] transition-transform duration-700">
+    <div className="w-full max-w-4xl mx-auto bg-black/50 backdrop-blur-md border border-white/10 p-6 md:p-16 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg text-center transform hover:scale-[1.02] transition-transform duration-700">
       {children}
     </div>
   </section>

@@ -507,6 +507,13 @@ export const AskYefris: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // If it's a touch device, pressing Enter should just add a newline naturally, no submission
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouchDevice && e.key === 'Enter') {
+      return; 
+    }
+
+    // Desktop behavior: Enter without shift submits the chat
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       submitQuestion();
@@ -784,7 +791,7 @@ export const AskYefris: React.FC = () => {
                   <textarea
                     id="question"
                     rows={1}
-                    className={`w-full px-4 py-3 min-h-[50px] max-h-[150px] border ${question.length > 5000 ? 'border-red-500/80 focus:ring-red-500 focus:border-red-500' : 'border-white/20 focus:ring-[#F1C40F] focus:border-[#F1C40F]'} rounded-lg resize-y bg-black/60 text-white outline-none transition-all duration-200 pr-16`}
+                    className={`w-full px-4 py-3 min-h-[44px] max-h-[80px] sm:max-h-[150px] border ${question.length > 5000 ? 'border-red-500/80 focus:ring-red-500 focus:border-red-500' : 'border-white/20 focus:ring-[#F1C40F] focus:border-[#F1C40F]'} rounded-lg resize-none sm:resize-y bg-black/60 text-white outline-none transition-all duration-200 pr-16`}
                     placeholder="Ask the Oracle..."
                     value={question}
                     onChange={handleInputTextChange}

@@ -280,7 +280,7 @@ export const YefrisLaserDefense: React.FC = () => {
         {/* Game Area */}
         <div 
           ref={containerRef}
-          className={`relative w-full h-[550px] overflow-hidden bg-gradient-to-b from-black to-[#110505] transition-all duration-300 ${(!isFrozen && !gameOver && isPlaying) ? 'cursor-crosshair' : ''}`}
+          className={`relative w-full h-[60vh] max-h-[550px] min-h-[350px] overflow-hidden bg-gradient-to-b from-black to-[#110505] transition-all duration-300 touch-none ${(!isFrozen && !gameOver && isPlaying) ? 'cursor-crosshair' : ''}`}
           onPointerDown={handleGameAreaPointerDown}
         >
           {/* Main Menu / Game Over Overlay */}
@@ -435,7 +435,7 @@ export const YefrisLaserDefense: React.FC = () => {
           {/* Laser Beams */}
           {lasers.map(laser => {
             const startX = containerRef.current?.offsetWidth ? containerRef.current.offsetWidth / 2 : 300;
-            const startY = 480; // approximate yefris eye level inside 550px container
+            const startY = containerRef.current?.offsetHeight ? containerRef.current.offsetHeight - 70 : 480;
             const length = Math.sqrt(Math.pow(laser.x - startX, 2) + Math.pow(laser.y - startY, 2));
             const angle = Math.atan2(laser.y - startY, laser.x - startX) * (180 / Math.PI);
 
@@ -477,7 +477,7 @@ export const YefrisLaserDefense: React.FC = () => {
             0% { top: -80px; transform: rotate(0deg); opacity: 0; }
             5% { opacity: 1; }
             95% { opacity: 1; }
-            100% { top: 550px; transform: rotate(180deg); opacity: 0; }
+            100% { top: 100%; transform: rotate(180deg); opacity: 0; }
           }
         `}
       </style>
