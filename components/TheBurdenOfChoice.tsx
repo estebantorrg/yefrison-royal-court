@@ -318,7 +318,7 @@ export const TheBurdenOfChoice: React.FC = () => {
 
             {/* The absolute Card */}
             <div
-              className="absolute inset-0 bg-[url('/yefris_tarot.png')] bg-cover bg-center rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center cursor-grab active:cursor-grabbing border border-[#F1C40F]/30"
+              className="absolute inset-0 bg-gradient-to-br from-[#1a1025] via-[#0d0a12] to-[#1a0f20] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center cursor-grab active:cursor-grabbing border border-[#F1C40F]/20 overflow-hidden"
               style={{
                 transform: transformStyle,
                 transition: transitionStyle,
@@ -328,9 +328,18 @@ export const TheBurdenOfChoice: React.FC = () => {
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
             >
+              {/* Subtle homun watermark */}
+              <div className="absolute inset-0 bg-[url('/homun.webp')] bg-center bg-no-repeat bg-contain opacity-[0.04] pointer-events-none scale-75" />
+              
+              {/* Decorative corner accents */}
+              <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-[#F1C40F]/30 rounded-tl-lg pointer-events-none" />
+              <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-[#F1C40F]/30 rounded-tr-lg pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-[#F1C40F]/30 rounded-bl-lg pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-[#F1C40F]/30 rounded-br-lg pointer-events-none" />
+
               {/* Internal absolute overlays for visual feedback when dragging */}
               <div
-                className="absolute inset-0 bg-red-900/40 rounded-3xl flex items-start justify-end p-6 pointer-events-none transition-opacity duration-150 relative z-20"
+                className="absolute inset-0 bg-red-900/30 rounded-3xl flex items-start justify-end p-6 pointer-events-none transition-opacity duration-150 z-20"
                 style={{ opacity: swipeOpacityLeft }}
               >
                 <div className="border-4 border-red-500 text-red-500 font-bold text-4xl uppercase tracking-widest px-4 py-2 rounded-lg -rotate-12 bg-black/50 backdrop-blur-[2px]">
@@ -339,7 +348,7 @@ export const TheBurdenOfChoice: React.FC = () => {
               </div>
 
               <div
-                className="absolute inset-0 bg-[#F1C40F]/40 rounded-3xl flex items-start justify-start p-6 pointer-events-none transition-opacity duration-150 relative z-20"
+                className="absolute inset-0 bg-[#F1C40F]/20 rounded-3xl flex items-start justify-start p-6 pointer-events-none transition-opacity duration-150 z-20"
                 style={{ opacity: swipeOpacityRight }}
               >
                 <div className="border-4 border-[#F1C40F] text-[#F1C40F] font-bold text-4xl uppercase tracking-widest px-4 py-2 rounded-lg rotate-12 bg-black/50 backdrop-blur-[2px]">
@@ -348,15 +357,20 @@ export const TheBurdenOfChoice: React.FC = () => {
               </div>
 
               {/* The Word */}
-              <div className="bg-black/60 w-full py-8 backdrop-blur-md border-y border-[#F1C40F]/30 shadow-[0_0_30px_rgba(0,0,0,0.9)] relative z-10 flex items-center justify-center min-h-[120px]">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif italic tracking-wider text-center px-6 leading-tight text-[#F1C40F] drop-shadow-[0_0_15px_rgba(241,196,15,0.8)] w-full">
+              <div className="relative z-10 flex items-center justify-center w-full px-6">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-wider text-center leading-tight text-white/90 drop-shadow-[0_0_20px_rgba(241,196,15,0.3)]">
                   {currentWord.word}
                 </h1>
+              </div>
+              
+              {/* Subtle bottom label */}
+              <div className="absolute bottom-8 text-[#F1C40F]/30 text-[10px] uppercase tracking-[0.4em] font-bold pointer-events-none">
+                The Burden of Choice
               </div>
             </div>
 
             {/* Background glowing aura behind card */}
-            <div className="absolute inset-0 -z-10 bg-[#F1C40F]/10 blur-[100px] pointer-events-none" />
+            <div className="absolute inset-0 -z-10 bg-[#F1C40F]/5 blur-[80px] pointer-events-none" />
           </div>
 
           {/* Tinder Action Buttons */}

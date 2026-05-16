@@ -291,8 +291,14 @@ export const YefrisFlappyCult: React.FC = () => {
       )}
 
       {showLeaderboard && !isPlaying && !gameOver && (
-        <div className="absolute inset-0 z-40 pt-48 p-6 bg-black/95 w-full animate-fade-in text-left overflow-y-auto">
-          <h3 className="text-[#E67E22] display-font text-3xl mb-6 text-center">Top Aviators</h3>
+        <div className="absolute inset-0 z-40 pt-16 p-6 bg-black/95 w-full animate-fade-in text-left overflow-y-auto">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowLeaderboard(false); }} 
+            className="absolute top-4 right-4 w-10 h-10 rounded-full border border-white/20 text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all text-xl font-bold z-50"
+          >
+            ✕
+          </button>
+          <h3 className="text-[#E67E22] display-font text-3xl mb-6 text-center mt-4">Top Aviators</h3>
           {leaderboard.length === 0 ? <p className="text-white/50 text-center">No scores yet.</p> : (
             <div className="space-y-3 max-w-xs mx-auto">
               {leaderboard.map((entry, idx) => (
