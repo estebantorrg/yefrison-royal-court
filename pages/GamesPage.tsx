@@ -57,7 +57,7 @@ const GamesPage: React.FC = () => {
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] rounded-xl transition-all duration-500 hover:shadow-[0_0_30px_rgba(231,76,60,0.3)] flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px] md:col-span-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#E74C3C]/20 via-[#E74C3C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-[url('/dog.png')] bg-contain bg-no-repeat bg-center mix-blend-lighten opacity-10 group-hover:opacity-40 transition-all duration-700 group-hover:scale-[1.15]" />
+                <div className="absolute inset-0 bg-[url('/dog.png')] bg-cover bg-center mix-blend-lighten opacity-10 group-hover:opacity-40 transition-all duration-700 group-hover:scale-[1.15]" />
                 
                 <div className="relative z-10 flex flex-col items-center text-center mt-auto w-full bg-gradient-to-t from-black via-black/90 to-transparent p-6 pt-24 h-full justify-end">
                   <h3 className="text-3xl text-[#E74C3C] display-font mb-2 drop-shadow-md tracking-wider group-hover:scale-105 transition-transform">Laser Defense</h3>
@@ -76,7 +76,7 @@ const GamesPage: React.FC = () => {
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(133,193,233,0.3)] flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px] md:col-span-2"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#85C1E9]/20 via-[#85C1E9]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-[url('/homun.webp')] bg-contain bg-no-repeat bg-center mix-blend-screen opacity-10 group-hover:opacity-40 transition-all duration-700 blur-[2px] group-hover:blur-none group-hover:scale-105" />
+                <div className="absolute inset-0 bg-[url('/homun.webp')] bg-cover bg-top mix-blend-screen opacity-10 group-hover:opacity-40 transition-all duration-700 blur-[2px] group-hover:blur-none group-hover:scale-105" />
                 
                 <div className="relative z-10 flex flex-col items-center text-center mt-auto w-full bg-gradient-to-t from-black via-black/90 to-transparent p-6 pt-24 h-full justify-end">
                   <h3 className="text-3xl md:text-5xl text-[#85C1E9] display-font mb-3 drop-shadow-lg tracking-wider group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
