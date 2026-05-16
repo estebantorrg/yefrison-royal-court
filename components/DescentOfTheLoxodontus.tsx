@@ -187,6 +187,15 @@ export const DescentOfTheLoxodontus: React.FC = () => {
       className={`w-full max-w-lg mx-auto border border-[#85C1E9]/30 rounded-xl bg-black overflow-hidden relative text-white min-h-[60vh] flex flex-col ${isPlaying ? 'cursor-none touch-none' : ''}`}
       style={{ userSelect: 'none' }}
     >
+      <style>{`
+        @keyframes floatUpFast {
+          0% { transform: translateY(100vh); opacity: 0; }
+          10% { opacity: 0.3; }
+          90% { opacity: 0.3; }
+          100% { transform: translateY(-20vh); opacity: 0; }
+        }
+      `}</style>
+
       {/* Background abyss effect */}
       <div className={`absolute inset-0 bg-gradient-to-b from-[#010b14] to-[#041d33] transition-colors duration-1000 ${isPlaying ? 'animate-pulse opacity-80' : ''}`} />
 
@@ -229,9 +238,31 @@ export const DescentOfTheLoxodontus: React.FC = () => {
       )}
 
       {isPlaying && (
-        <div className="absolute inset-0 z-10 pointer-events-none">
+        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+          
+          {/* Parallax Debris for falling illusion */}
+          {[...Array(20)].map((_, i) => (
+            <div 
+              key={`debris-${i}`}
+              className="absolute w-1 h-1 bg-[#85C1E9]/30 rounded-full"
+              style={{
+                left: `${10 + Math.random() * 80}%`,
+                animation: `floatUpFast ${1 + Math.random() * 2}s linear infinite`,
+                animationDelay: `${Math.random() * 2}s`
+              }}
+            />
+          ))}
+
           <div className="absolute top-4 left-4 text-[#85C1E9] font-bold text-xl tracking-widest opacity-50 z-20">
             {score} ft
+          </div>
+
+          {/* UX Drift Hints */}
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 font-black tracking-widest text-sm rotate-[-90deg] origin-left">
+            ← DRIFT LEFT
+          </div>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/10 font-black tracking-widest text-sm rotate-[90deg] origin-right">
+            DRIFT RIGHT →
           </div>
 
           {/* El Homun (Player) */}
