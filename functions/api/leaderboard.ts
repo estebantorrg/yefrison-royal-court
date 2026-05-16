@@ -39,14 +39,17 @@ export const onRequestOptions = async () => {
 };
 
 export const onRequestGet = async (context: any) => {
-  const { env } = context;
+  const { request, env } = context;
+  const url = new URL(request.url);
+  const gameId = url.searchParams.get("game") || "defense";
+  const kvKey = gameId === "defense" ? "top_scores" : `top_scores_${gameId}`;
 
   try {
     let topScores: {name: string, score: number}[] = [];
 
     if (env.LEADERBOARD_KV) {
       try {
-        let textData = await env.LEADERBOARD_KV.get("top_scores", { type: "text" });
+        let textData = await env.LEADERBOARD_KV.get(kvKey, { type: "text" });
         if (textData) {
           if (!textData.trim().startsWith('[')) {
             textData = `[${textData}]`;
@@ -93,7 +96,9 @@ export const onRequestPost = async (context: any) => {
       return new Response(JSON.stringify({ error: "Invalid JSON format" }), { status: 400, headers: CORS_HEADERS });
     }
 
-    const { name, score, sessionId } = body;
+    const { name, score, sessionId, game } = body;
+    const gameId = game || "defense";
+    const kvKey = gameId === "defense" ? "top_scores" : `top_scores_${gameId}`;
 
     // ─── Input Validation ───
     if (!name || typeof name !== 'string' || name.length > 20) {
@@ -144,7 +149,7 @@ export const onRequestPost = async (context: any) => {
 
     if (env.LEADERBOARD_KV) {
       try {
-        let textData = await env.LEADERBOARD_KV.get("top_scores", { type: "text" });
+        let textData = await env.LEADERBOARD_KV.get(kvKey, { type: "text" });
         if (textData) {
           if (!textData.trim().startsWith('[')) {
             textData = `[${textData}]`;
@@ -174,7 +179,7 @@ export const onRequestPost = async (context: any) => {
     currentLeaderboard = currentLeaderboard.slice(0, 10);
 
     if (env.LEADERBOARD_KV) {
-      await env.LEADERBOARD_KV.put("top_scores", JSON.stringify(currentLeaderboard));
+      await env.LEADERBOARD_KV.put(kvKey, JSON.stringify(currentLeaderboard));
     } else {
       mockLeaderboard = currentLeaderboard;
     }

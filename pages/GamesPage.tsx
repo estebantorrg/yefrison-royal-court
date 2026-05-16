@@ -3,13 +3,17 @@ import { Link, useParams } from 'react-router-dom';
 import { ElHomunStare } from '../components/ElHomunStare';
 import { YefrisLaserDefense } from '../components/YefrisLaserDefense';
 import { WoofsPerSecond } from '../components/WoofsPerSecond';
+import { TheBurdenOfChoice } from '../components/TheBurdenOfChoice';
+import { DescentOfTheLoxodontus } from '../components/DescentOfTheLoxodontus';
 
-type GameId = 'menu' | 'homun' | 'defense' | 'woofs';
+type GameId = 'menu' | 'homun' | 'defense' | 'woofs' | 'burden' | 'loxodontus';
 
 const GAME_MAP: Record<string, GameId> = {
   'el-homun': 'homun',
   'laser-defense': 'defense',
   'woofs': 'woofs',
+  'burden': 'burden',
+  'loxodontus': 'loxodontus',
 };
 
 const GamesPage: React.FC = () => {
@@ -40,6 +44,18 @@ const GamesPage: React.FC = () => {
         return (
           <div className="w-full animate-fade-in-up relative z-10" key="woofs">
             <WoofsPerSecond />
+          </div>
+        );
+      case 'burden':
+        return (
+          <div className="w-full animate-fade-in-up relative z-10" key="burden">
+            <TheBurdenOfChoice />
+          </div>
+        );
+      case 'loxodontus':
+        return (
+          <div className="w-full animate-fade-in-up relative z-10" key="loxodontus">
+            <DescentOfTheLoxodontus />
           </div>
         );
       default:
@@ -92,18 +108,56 @@ const GamesPage: React.FC = () => {
               {/* Woofs Card */}
               <div 
                 onClick={() => setActiveGame('woofs')} 
-                className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#F1C40F]/30 hover:border-[#F1C40F] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(241,196,15,0.2)] flex flex-col items-center justify-center min-h-[250px] md:min-h-[300px] md:col-span-3"
+                className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#F1C40F]/30 hover:border-[#F1C40F] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(241,196,15,0.2)] flex flex-col items-center justify-center min-h-[250px] md:min-h-[300px] md:col-span-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F1C40F]/5 via-transparent to-[#F1C40F]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
-                <div className="relative z-10 flex flex-col items-center text-center w-full p-8">
-                  <h3 className="text-3xl md:text-4xl text-[#F1C40F] display-font mb-4 drop-shadow-md tracking-wider group-hover:scale-105 transition-transform">Woofs Per Minute</h3>
+                <div className="relative z-10 flex flex-col items-center text-center w-full p-8 justify-center h-full">
+                  <h3 className="text-3xl text-[#F1C40F] display-font mb-4 drop-shadow-md tracking-wider group-hover:scale-105 transition-transform">Woofs Per Minute</h3>
                   <div className="overflow-hidden">
-                    <p className="text-white/70 text-sm md:text-base max-w-2xl mx-auto mb-6 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                      Transcribe sacred cult scriptures. How fast can your devotion flow from mind to key?
+                    <p className="text-white/70 text-sm max-w-sm mb-6 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 line-clamp-3">
+                      Transcribe scriptures. How fast can your devotion flow from mind to key?
                     </p>
                   </div>
                   <span className="text-[#F1C40F] font-bold tracking-[0.3em] uppercase text-xs border border-[#F1C40F] px-8 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">Transcribe</span>
+                </div>
+              </div>
+
+              {/* The Burden Of Choice */}
+              <div 
+                onClick={() => setActiveGame('burden')} 
+                className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#9B59B6]/40 hover:border-[#9B59B6] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(155,89,182,0.4)] flex flex-col items-center justify-center min-h-[250px] md:min-h-[300px] md:col-span-2"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-[#9B59B6]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-[url('/dog.png')] bg-cover bg-[center_top] mix-blend-lighten opacity-10 group-hover:opacity-20 transition-all duration-700 group-hover:scale-105" />
+                
+                <div className="relative z-10 flex flex-col items-center text-center w-full p-8 justify-center h-full bg-gradient-to-t from-black via-black/60 to-transparent">
+                  <h3 className="text-3xl md:text-5xl text-[#9B59B6] display-font mb-4 drop-shadow-md tracking-wider group-hover:scale-105 transition-transform">The Burden of Choice</h3>
+                  <div className="overflow-hidden">
+                    <p className="text-white/70 text-sm md:text-base max-w-lg mb-6 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 line-clamp-2">
+                       Prove your brain is smooth enough to separate Joy from Irrelevant Noise instantly.
+                    </p>
+                  </div>
+                  <span className="text-white border-[#9B59B6] font-bold tracking-[0.3em] uppercase text-xs border px-8 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">Sort Reality</span>
+                </div>
+              </div>
+
+              {/* Descent of the Loxodontus */}
+              <div 
+                onClick={() => setActiveGame('loxodontus')} 
+                className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#2980B9]/40 hover:border-[#2980B9] rounded-xl transition-all duration-500 flex flex-col items-center justify-center min-h-[350px] md:col-span-3 hover:shadow-[0_0_50px_rgba(41,128,185,0.4)]"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-[#2980B9]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#010b14] to-[#041d33] opacity-20 group-hover:opacity-80 transition-all duration-700" />
+                
+                <div className="relative z-10 flex flex-col items-center text-center w-full p-8 mt-auto h-full justify-center">
+                  <h3 className="text-4xl md:text-6xl text-white display-font mb-4 drop-shadow-[0_0_15px_rgba(133,193,233,0.8)] tracking-wider group-hover:scale-105 transition-transform">Descent of the Loxodontus</h3>
+                  <div className="overflow-hidden">
+                    <p className="text-[#85C1E9]/80 text-sm md:text-lg max-w-2xl mb-6 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                      Sink into the oceanic depths of absolute silence. Dodge the expanding orbs of Logic and Reason.
+                    </p>
+                  </div>
+                  <span className="text-black bg-[#85C1E9] border-black font-bold tracking-[0.3em] uppercase text-xs px-10 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 shadow-xl">Sink Deep</span>
                 </div>
               </div>
 

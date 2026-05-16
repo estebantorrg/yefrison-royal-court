@@ -49,7 +49,7 @@ export const YefrisLaserDefense: React.FC = () => {
   // Fetch Leaderboard
   const fetchLeaderboard = async () => {
     try {
-      const res = await fetch('/api/leaderboard');
+      const res = await fetch('/api/leaderboard?game=defense');
       if (res.ok) {
         const data = await res.json();
         setLeaderboard(data);
@@ -149,7 +149,7 @@ export const YefrisLaserDefense: React.FC = () => {
       const res = await fetch('/api/leaderboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score, sessionId: gameSessionId })
+        body: JSON.stringify({ name: playerName, score, sessionId: gameSessionId, game: 'defense' })
       });
       if (res.ok) {
         setScoreSubmitted(true);
