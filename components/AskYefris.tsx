@@ -683,12 +683,12 @@ export const AskYefris: React.FC = () => {
                         <div
                           className={`p-4 lg:px-6 lg:py-5 rounded-2xl shadow-md ${msg.role === 'user'
                             ? 'bg-[#1F618D] border border-[#2980B9]/60 text-white rounded-br-sm'
-                            : 'bg-[#FDF2E9] border border-amber-300/80 text-gray-900 rounded-bl-sm shadow-[0_0_15px_rgba(241,196,15,0.1)]'
+                            : 'bg-[#1a1608] border border-[#F1C40F]/20 text-[#F8F9FA]/90 rounded-bl-sm shadow-[0_0_15px_rgba(241,196,15,0.06)]'
                             } ${isErrorOnLastMessage ? 'border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                         >
                           {msg.role === 'yefris' && (
-                            <div className="flex justify-between items-center mb-2 border-b border-[#D35400]/20 pb-1">
-                              <h3 className="text-xs tracking-wider uppercase font-bold text-[#D35400] opacity-80 inline-block">Yefris Answers</h3>
+                            <div className="flex justify-between items-center mb-2 border-b border-[#F1C40F]/15 pb-1">
+                              <h3 className="text-xs tracking-wider uppercase font-bold text-[#F1C40F] opacity-80 inline-block">Yefris Answers</h3>
                               <button
                                 onClick={() => {
                                   // Find the closest previous user message to act as the question
@@ -701,7 +701,7 @@ export const AskYefris: React.FC = () => {
                                   }
                                   setSharingMessage({ question: questionText, answer: msg.text });
                                 }}
-                                className="text-[#D35400] hover:text-[#E67E22] opacity-60 hover:opacity-100 transition-opacity p-1 group/share"
+                                className="text-[#F1C40F] hover:text-[#E67E22] opacity-60 hover:opacity-100 transition-opacity p-1 group/share"
                                 title="Share Oracle's Wisdom"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -769,9 +769,9 @@ export const AskYefris: React.FC = () => {
 
               {loading && (
                 <div className="flex flex-col items-start">
-                  <div className="max-w-[85%] p-4 rounded-2xl bg-[#FDF2E9]/70 border border-amber-300/50 text-gray-900 rounded-bl-sm flex items-center shadow-[0_0_15px_rgba(241,196,15,0.1)]">
-                    <LoadingSpinner className="mr-3 text-[#D35400] h-5 w-5" />
-                    <span className="italic font-medium text-gray-700">{loadingText}<span style={{ animation: 'blink 0.7s step-end infinite' }}>|</span></span>
+                  <div className="max-w-[85%] p-4 rounded-2xl bg-[#1a1608]/80 border border-[#F1C40F]/15 text-[#F8F9FA]/90 rounded-bl-sm flex items-center shadow-[0_0_15px_rgba(241,196,15,0.06)]">
+                    <LoadingSpinner className="mr-3 text-[#F1C40F] h-5 w-5" />
+                    <span className="italic font-medium text-white/70">{loadingText}<span style={{ animation: 'blink 0.7s step-end infinite' }}>|</span></span>
                   </div>
                 </div>
               )}

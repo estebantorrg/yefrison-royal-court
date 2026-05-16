@@ -48,20 +48,20 @@ h1, h2, h3, h4, h5, h6, .display-font {
   50% { opacity: 0; }
 }
 
-/* Oracle Markdown — style ReactMarkdown output inside Yefris chat bubbles */
+/* Oracle Markdown — style ReactMarkdown output inside dark Yefris chat bubbles */
 .oracle-markdown p { margin-bottom: 0.5em; }
 .oracle-markdown p:last-child { margin-bottom: 0; }
 .oracle-markdown strong { font-weight: 700; }
 .oracle-markdown em { font-style: italic; }
 .oracle-markdown ul, .oracle-markdown ol { padding-left: 1.25em; margin: 0.5em 0; }
 .oracle-markdown li { margin-bottom: 0.25em; }
-.oracle-markdown a { color: #D35400; text-decoration: underline; text-underline-offset: 2px; }
-.oracle-markdown a:hover { color: #E67E22; }
-.oracle-markdown code { background: rgba(0,0,0,0.08); padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.9em; }
-.oracle-markdown pre { background: rgba(0,0,0,0.06); padding: 0.75em; border-radius: 6px; overflow-x: auto; margin: 0.5em 0; }
+.oracle-markdown a { color: #F1C40F; text-decoration: underline; text-underline-offset: 2px; }
+.oracle-markdown a:hover { color: #F39C12; }
+.oracle-markdown code { background: rgba(255,255,255,0.08); padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.9em; }
+.oracle-markdown pre { background: rgba(255,255,255,0.05); padding: 0.75em; border-radius: 6px; overflow-x: auto; margin: 0.5em 0; }
 .oracle-markdown pre code { background: none; padding: 0; }
 .oracle-markdown h1, .oracle-markdown h2, .oracle-markdown h3 { font-weight: 700; margin: 0.75em 0 0.25em; }
-.oracle-markdown blockquote { border-left: 3px solid #D35400; padding-left: 0.75em; margin: 0.5em 0; opacity: 0.85; }
+.oracle-markdown blockquote { border-left: 3px solid #F1C40F; padding-left: 0.75em; margin: 0.5em 0; opacity: 0.85; }
 
 /* Custom Scrollbar */
 .custom-scrollbar {
@@ -72,3 +72,20 @@ h1, h2, h3, h4, h5, h6, .display-font {
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+/* Page / Game Transitions */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in-up { animation: fade-in-up 0.35s ease-out both; }
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }
+
+/* Route transition wrapper */
+.page-transition-enter {
+  animation: fade-in-up 0.3s ease-out both;
+}

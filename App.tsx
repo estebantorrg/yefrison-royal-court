@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { AskYefris } from './components/AskYefris';
 import { ElHomunStare } from './components/ElHomunStare';
 import { InitiationCertificate } from './components/InitiationCertificate';
 import { YefrisLaserDefense } from './components/YefrisLaserDefense';
 import { WoofsPerSecond } from './components/WoofsPerSecond';
+import OraclePage from './pages/OraclePage';
+import GamesPage from './pages/GamesPage';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
@@ -18,7 +21,7 @@ const CultExaminationsModule = () => {
 
   if (activeGame === 'homun') {
     return (
-      <div className="w-full relative mt-12">
+      <div className="w-full relative mt-12 animate-fade-in-up" key="homun">
         <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#85C1E9] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
         <ElHomunStare />
       </div>
@@ -27,7 +30,7 @@ const CultExaminationsModule = () => {
 
   if (activeGame === 'defense') {
     return (
-      <div className="w-full relative mt-12">
+      <div className="w-full relative mt-12 animate-fade-in-up" key="defense">
         <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#E74C3C] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
         <YefrisLaserDefense />
       </div>
@@ -36,7 +39,7 @@ const CultExaminationsModule = () => {
 
   if (activeGame === 'woofs') {
     return (
-      <div className="w-full relative mt-12">
+      <div className="w-full relative mt-12 animate-fade-in-up" key="woofs">
         <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#F1C40F] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
         <WoofsPerSecond />
       </div>
@@ -44,7 +47,7 @@ const CultExaminationsModule = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto mt-8 animate-fade-in" key="menu">
       <div onClick={() => setActiveGame('homun')} className="cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] p-8 rounded-xl transition-all hover:bg-[#85C1E9]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
         <h3 className="text-xl text-[#85C1E9] display-font mb-3 group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
         <p className="text-white/70 text-xs">Test your soul's synchronization. Can you remain perfectly still?</p>
@@ -61,7 +64,7 @@ const CultExaminationsModule = () => {
   );
 };
 
-const App = () => {
+const HomePage = () => {
   const [hasReachedVideo, setHasReachedVideo] = useState(false);
   const [scrollP, setScrollP] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,23 +77,18 @@ const App = () => {
       const b = document.body;
       const st = 'scrollTop';
       const sh = 'scrollHeight';
-      // Calculate percentage, maxing at 90% scroll for full color effect before the very end
-      // Multiplier of 110 (instead of 100) so the glow reaches full intensity at ~91% scroll,
-      // giving a complete visual effect before the user hits the absolute bottom of the page.
       const scrollHeight = (h[sh] || b[sh]) - h.clientHeight;
       let percent = scrollHeight > 0 ? ((h[st] || b[st]) / scrollHeight) * 110 : 0;
       setScrollP(Math.min(100, Math.max(0, percent)));
     };
     
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // init
+    handleScroll();
     
-    // Intersection Observer for Youtube Autoplay
     const shadowObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           setHasReachedVideo(true);
-          // Auto-play via postMessage as fallback (if iframe already loaded)
           if (iframeRef.current && iframeRef.current.contentWindow) {
             iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
           }
@@ -107,20 +105,16 @@ const App = () => {
     };
   }, []);
 
-  // Close mobile menu when clicking a link
   const handleLinkClick = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // A spotlight diffusing against a black wall from the bottom.
-  // The intensity and spread of the light are based on scroll position.
   const bgStyle = {
     backgroundColor: '#050505',
     backgroundImage: `radial-gradient(ellipse at center bottom, rgba(255, 245, 180, ${Math.min(0.8, scrollP / 120)}) 0%, rgba(200, 150, 20, ${Math.min(0.4, scrollP / 180)}) 30%, transparent 80%)`,
     backgroundAttachment: 'fixed',
   };
 
-  // Text colors stay light since the background is essentially black/dark.
   const textColor = '#F8F9FA';
   const headerColor = '#85C1E9';
 
@@ -141,7 +135,7 @@ const App = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row relative">
-        {/* SIDEBAR NAVBAR (Epsilon Style) */}
+        {/* SIDEBAR NAVBAR */}
         <nav className={`
           ${isDesktopMenuOpen ? 'lg:flex' : 'lg:hidden'} flex-col
           lg:w-64 sticky top-0 lg:h-screen bg-black/80 lg:bg-black/60 border-b lg:border-b-0 lg:border-r border-white/10 backdrop-blur-md z-50 flex-shrink-0 w-full lg:overflow-y-auto shadow-[0_5px_15px_rgba(0,0,0,0.5)] lg:shadow-[5px_0_15px_rgba(0,0,0,0.5)] transition-all
@@ -178,11 +172,11 @@ const App = () => {
             <li><a onClick={handleLinkClick} href="#cult" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Cult</a></li>
             <li><a onClick={handleLinkClick} href="#el-homun" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">El Homun</a></li>
             <li><a onClick={handleLinkClick} href="#practices" className="block text-center bg-[#85C1E9]/10 hover:bg-[#85C1E9]/30 border border-[#85C1E9]/40 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Beliefs</a></li>
-            <li><a onClick={handleLinkClick} href="#minigames" className="block text-center bg-[#9B59B6]/20 hover:bg-[#9B59B6]/40 border border-[#9B59B6]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Minigames</a></li>
+            <li><Link onClick={handleLinkClick} to="/games" className="block text-center bg-[#9B59B6]/20 hover:bg-[#9B59B6]/40 border border-[#9B59B6]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Minigames</Link></li>
             <li><a onClick={handleLinkClick} href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
             <li><a onClick={handleLinkClick} href="#initiation" className="block text-center bg-[#2ECC71]/20 hover:bg-[#2ECC71]/40 border border-[#2ECC71]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Initiation</a></li>
             <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
-            <li><a onClick={handleLinkClick} href="#ask-yefris" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
+            <li><Link onClick={handleLinkClick} to="/oracle" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</Link></li>
           </ul>
         </nav>
 
@@ -251,6 +245,12 @@ const App = () => {
         </p>
         
         <CultExaminationsModule />
+
+        <div className="mt-8">
+          <Link to="/games" className="text-[#9B59B6] hover:text-white font-bold uppercase tracking-widest text-sm transition-colors border border-[#9B59B6]/50 hover:border-[#9B59B6] px-6 py-3 rounded-lg inline-block hover:bg-[#9B59B6]/20">
+            Open Full Games Hub →
+          </Link>
+        </div>
       </CultSection>
 
       <CultSection id="military">
@@ -316,7 +316,7 @@ const App = () => {
               <h4 className="text-2xl font-bold text-[#85C1E9] mb-4">The Pops Regime</h4>
               <ul className="space-y-4 text-base text-[#F8F9FA]/80">
                 <li className="flex flex-col">
-                  <strong className="text-white text-lg">Pops & Pops Microcefálico</strong> 
+                  <strong className="text-white text-lg">Pops &amp; Pops Microcefálico</strong> 
                   <span className="opacity-75">The Supreme Leader of absolute authority and his genetic amalgam.</span>
                 </li>
                 <li className="flex flex-col">
@@ -331,7 +331,7 @@ const App = () => {
             </div>
 
             <div className="bg-gradient-to-br from-black/60 to-black/30 p-8 rounded-xl border border-white/5 shadow-lg">
-              <h4 className="text-2xl font-bold text-[#E74C3C] mb-4">The Resistance & Chaos</h4>
+              <h4 className="text-2xl font-bold text-[#E74C3C] mb-4">The Resistance &amp; Chaos</h4>
               <ul className="space-y-4 text-base text-[#F8F9FA]/80">
                 <li className="flex flex-col">
                   <strong className="text-white text-lg">Ñandú Garay</strong> 
@@ -368,8 +368,19 @@ const App = () => {
         </p>
       </div>
 
-      {/* The Oracle */}
-      <AskYefris />
+      {/* Oracle Preview + CTA */}
+      <section className="py-20 px-4 relative z-10 flex flex-col items-center text-center">
+        <h2 className="display-font text-4xl text-[#F1C40F] mb-4">The Oracle Awaits</h2>
+        <p className="text-white/70 mb-8 max-w-md">
+          Ask Yefris your worldly questions. Seek wisdom, guidance, or pure oblivion.
+        </p>
+        <Link 
+          to="/oracle" 
+          className="px-8 py-4 bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border-2 border-[#F1C40F] text-[#F1C40F] font-bold rounded-lg uppercase tracking-[0.3em] transition-all hover:scale-105 hover:shadow-[0_0_25px_rgba(241,196,15,0.4)] text-lg display-font"
+        >
+          Enter The Oracle →
+        </Link>
+      </section>
 
       <footer className="bg-transparent text-white/50 text-center p-8 mt-12 pb-24 relative z-10 border-t border-white/10">
         <p className="text-xl display-font uppercase tracking-widest">&copy; {new Date().getFullYear()} Yefris loves you.</p>
@@ -378,6 +389,29 @@ const App = () => {
         </main>
       </div>
     </div>
+  );
+};
+
+// Scroll-to-top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
+const App = () => {
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/oracle" element={<OraclePage />} />
+        <Route path="/games" element={<GamesPage />} />
+        <Route path="/games/:gameSlug" element={<GamesPage />} />
+      </Routes>
+    </>
   );
 };
 

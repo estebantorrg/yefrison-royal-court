@@ -1,9 +1,9 @@
-// Mock in-memory store for dev/testing when KV isn't bound yet
+// Leaderboard API — Now validates server-side game session tokens
 let mockLeaderboard: {name: string, score: number}[] = [];
 
 // ─── In-Memory Rate Limiter ───
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_REQUESTS = 15; // 15 POST submissions per minute per IP
+const RATE_LIMIT_MAX_REQUESTS = 15;
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function isRateLimited(ip: string): boolean {
@@ -49,13 +49,13 @@ export const onRequestGet = async (context: any) => {
         let textData = await env.LEADERBOARD_KV.get("top_scores", { type: "text" });
         if (textData) {
           if (!textData.trim().startsWith('[')) {
-            textData = `[${textData}]`; // Auto-fix missing brackets
+            textData = `[${textData}]`;
           }
           const data = JSON.parse(textData);
           topScores = Array.isArray(data) ? data : [];
         }
       } catch (e) {
-        console.error("KV parsing failed on GET, falling back to empty array", e);
+        console.error("KV parsing failed on GET", e);
         topScores = [];
       }
     } else {
@@ -93,8 +93,9 @@ export const onRequestPost = async (context: any) => {
       return new Response(JSON.stringify({ error: "Invalid JSON format" }), { status: 400, headers: CORS_HEADERS });
     }
 
-    const { name, score, timestamp, hash } = body;
+    const { name, score, sessionId } = body;
 
+    // ─── Input Validation ───
     if (!name || typeof name !== 'string' || name.length > 20) {
       return new Response(JSON.stringify({ error: "Invalid name" }), { status: 400, headers: CORS_HEADERS });
     }
@@ -102,23 +103,42 @@ export const onRequestPost = async (context: any) => {
       return new Response(JSON.stringify({ error: "Invalid or impossible score" }), { status: 400, headers: CORS_HEADERS });
     }
 
-    // Time window check (2 minutes = 120000 ms)
-    const now = Date.now();
-    if (!timestamp || Math.abs(now - timestamp) > 120000) {
-      return new Response(JSON.stringify({ error: "Request expired or invalid timestamp" }), { status: 403, headers: CORS_HEADERS });
+    // ─── Server-Side Session Validation ───
+    if (!sessionId || typeof sessionId !== 'string') {
+      return new Response(JSON.stringify({ error: "Missing game session" }), { status: 403, headers: CORS_HEADERS });
     }
 
-    // Hash signature check (Anti-Cheat)
-    const encoder = new TextEncoder();
-    const data = encoder.encode(`${name}:${score}:${timestamp}:YEFRIS_SECRET_SALT_V1`);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const expectedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    if (env.LEADERBOARD_KV) {
+      const sessionKey = `session:${sessionId}`;
+      const sessionRaw = await env.LEADERBOARD_KV.get(sessionKey, { type: "text" });
 
-    if (hash !== expectedHash) {
-      return new Response(JSON.stringify({ error: "Invalid signature payload" }), { status: 403, headers: CORS_HEADERS });
+      if (!sessionRaw) {
+        return new Response(JSON.stringify({ error: "Invalid or expired game session" }), { status: 403, headers: CORS_HEADERS });
+      }
+
+      let sessionData;
+      try {
+        sessionData = JSON.parse(sessionRaw);
+      } catch {
+        return new Response(JSON.stringify({ error: "Corrupted session data" }), { status: 403, headers: CORS_HEADERS });
+      }
+
+      if (sessionData.used) {
+        return new Response(JSON.stringify({ error: "Session already used" }), { status: 403, headers: CORS_HEADERS });
+      }
+
+      // Check session age (max 10 minutes — belt + suspenders with KV TTL)
+      if (Date.now() - sessionData.createdAt > 600_000) {
+        await env.LEADERBOARD_KV.delete(sessionKey);
+        return new Response(JSON.stringify({ error: "Session expired" }), { status: 403, headers: CORS_HEADERS });
+      }
+
+      // Mark session as used (one-time submission)
+      sessionData.used = true;
+      await env.LEADERBOARD_KV.put(sessionKey, JSON.stringify(sessionData), { expirationTtl: 60 }); // Keep briefly for debugging, then auto-expire
     }
 
+    // ─── Leaderboard Update ───
     const newEntry = { name: name.trim() || 'Anonymous', score };
     let currentLeaderboard: {name: string, score: number}[] = [];
 
@@ -127,20 +147,20 @@ export const onRequestPost = async (context: any) => {
         let textData = await env.LEADERBOARD_KV.get("top_scores", { type: "text" });
         if (textData) {
           if (!textData.trim().startsWith('[')) {
-            textData = `[${textData}]`; // Auto-fix missing brackets
+            textData = `[${textData}]`;
           }
           const parsedData = JSON.parse(textData);
           currentLeaderboard = Array.isArray(parsedData) ? parsedData : [];
         }
       } catch (e) {
-        console.error("KV parsing failed on POST, overwriting with new valid array", e);
+        console.error("KV parsing failed on POST", e);
         currentLeaderboard = [];
       }
     } else {
       currentLeaderboard = [...mockLeaderboard];
     }
 
-    // Insert or update existing score (keep highest)
+    // Insert or update (keep highest)
     const existingIndex = currentLeaderboard.findIndex(e => e.name.toLowerCase() === newEntry.name.toLowerCase());
     if (existingIndex !== -1) {
       if (newEntry.score > currentLeaderboard[existingIndex].score) {
@@ -153,7 +173,6 @@ export const onRequestPost = async (context: any) => {
     currentLeaderboard.sort((a, b) => b.score - a.score);
     currentLeaderboard = currentLeaderboard.slice(0, 10);
 
-    // Save
     if (env.LEADERBOARD_KV) {
       await env.LEADERBOARD_KV.put("top_scores", JSON.stringify(currentLeaderboard));
     } else {

@@ -34,6 +34,8 @@ export const WoofsPerSecond: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const typedRef = useRef<string>(''); // keep a ref in sync for keydown handler
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+  const [isMobile] = useState(() => 'ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches);
 
   const pickPassage = useCallback(() => {
     const idx = Math.floor(Math.random() * PASSAGES.length);
@@ -47,6 +49,10 @@ export const WoofsPerSecond: React.FC = () => {
     typedRef.current = '';
     setTimeLeft(DURATION);
     setStatus('playing');
+    // Auto-focus mobile input after render
+    if (isMobile) {
+      setTimeout(() => mobileInputRef.current?.focus(), 100);
+    }
   };
 
   // Timer
@@ -76,9 +82,9 @@ export const WoofsPerSecond: React.FC = () => {
     }
   }, [typed, passage, status]);
 
-  // Direct keydown handler — no hidden textarea needed
+  // Direct keydown handler — desktop only (mobile uses visible input)
   useEffect(() => {
-    if (status !== 'playing') return;
+    if (status !== 'playing' || isMobile) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't steal input from other interactive elements (Oracle chat, etc.)
@@ -109,7 +115,17 @@ export const WoofsPerSecond: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [status, passage]);
+  }, [status, passage, isMobile]);
+
+  // Mobile input handler
+  const handleMobileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // The input value represents the full typed sequence
+    // We only allow forward progress + backspace
+    if (value.length > passage.length) return;
+    typedRef.current = value;
+    setTyped(value);
+  };
 
   // Calculate stats
   const getStats = () => {
@@ -244,8 +260,24 @@ export const WoofsPerSecond: React.FC = () => {
               </div>
 
               <p className="text-center text-white/30 text-xs uppercase tracking-widest mt-2">
-                {typed.length === 0 ? 'Start typing...' : `${typed.length} / ${passage.length} characters`}
+                {typed.length === 0 ? (isMobile ? 'Tap below and start typing...' : 'Start typing...') : `${typed.length} / ${passage.length} characters`}
               </p>
+
+              {/* Mobile: visible input field */}
+              {isMobile && (
+                <input
+                  ref={mobileInputRef}
+                  type="text"
+                  value={typed}
+                  onChange={handleMobileInput}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  className="w-full mt-3 px-4 py-3 bg-black/60 border border-[#F1C40F]/40 rounded-lg text-white font-mono text-base focus:outline-none focus:border-[#F1C40F] transition-colors"
+                  placeholder="Type here..."
+                />
+              )}
             </div>
           )}
 

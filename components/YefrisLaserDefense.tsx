@@ -21,14 +21,7 @@ interface LeaderboardEntry {
   score: number;
 }
 
-// Anti-Cheat Signature Generator
-const generateSignature = async (name: string, score: number, timestamp: number) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(`${name}:${score}:${timestamp}:YEFRIS_SECRET_SALT_V1`);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
+
 
 export const YefrisLaserDefense: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,6 +41,7 @@ export const YefrisLaserDefense: React.FC = () => {
   const [isSubmittingScore, setIsSubmittingScore] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const targetIdCounter = useRef(0);
@@ -105,7 +99,7 @@ export const YefrisLaserDefense: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying, gameOver, isPaused, resumeCountdown, score]);
 
-  const startGame = (selectedMode: GameMode) => {
+  const startGame = async (selectedMode: GameMode) => {
     setMode(selectedMode);
     setScore(0);
     setLives(3);
@@ -117,6 +111,17 @@ export const YefrisLaserDefense: React.FC = () => {
     setResumeCountdown(null);
     setScoreSubmitted(false);
     targetIdCounter.current = 0;
+
+    // Request server-side game session token
+    try {
+      const res = await fetch('/api/game-session', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setGameSessionId(data.sessionId);
+      }
+    } catch (e) {
+      console.warn('Failed to get game session, submission may fail');
+    }
   };
 
   const endGame = () => {
@@ -141,16 +146,14 @@ export const YefrisLaserDefense: React.FC = () => {
     
     setIsSubmittingScore(true);
     try {
-      const timestamp = Date.now();
-      const hash = await generateSignature(playerName, score, timestamp);
-
       const res = await fetch('/api/leaderboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score, timestamp, hash })
+        body: JSON.stringify({ name: playerName, score, sessionId: gameSessionId })
       });
       if (res.ok) {
         setScoreSubmitted(true);
+        setGameSessionId(null);
         fetchLeaderboard();
       } else {
         const errBody = await res.text();
