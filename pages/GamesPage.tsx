@@ -4,16 +4,16 @@ import { ElHomunStare } from '../components/ElHomunStare';
 import { YefrisLaserDefense } from '../components/YefrisLaserDefense';
 import { WoofsPerSecond } from '../components/WoofsPerSecond';
 import { TheBurdenOfChoice } from '../components/TheBurdenOfChoice';
-import { DescentOfTheLoxodontus } from '../components/DescentOfTheLoxodontus';
+import { YefrisFlappyCult } from '../components/YefrisFlappyCult';
 
-type GameId = 'menu' | 'homun' | 'defense' | 'woofs' | 'burden' | 'loxodontus';
+type GameId = 'menu' | 'homun' | 'defense' | 'woofs' | 'burden' | 'flappy';
 
 const GAME_MAP: Record<string, GameId> = {
   'el-homun': 'homun',
   'laser-defense': 'defense',
   'woofs': 'woofs',
   'burden': 'burden',
-  'loxodontus': 'loxodontus',
+  'flappy': 'flappy',
 };
 
 const GamesPage: React.FC = () => {
@@ -52,10 +52,10 @@ const GamesPage: React.FC = () => {
             <TheBurdenOfChoice />
           </div>
         );
-      case 'loxodontus':
+      case 'flappy':
         return (
-          <div className="w-full animate-fade-in-up relative z-10" key="loxodontus">
-            <DescentOfTheLoxodontus />
+          <div className="w-full animate-fade-in-up relative z-10" key="flappy">
+            <YefrisFlappyCult />
           </div>
         );
       default:
@@ -142,22 +142,23 @@ const GamesPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Descent of the Loxodontus */}
+              {/* Flight of El Homun (Flappy Bird) */}
               <div 
-                onClick={() => setActiveGame('loxodontus')} 
-                className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#2980B9]/40 hover:border-[#2980B9] rounded-xl transition-all duration-500 flex flex-col items-center justify-center min-h-[350px] md:col-span-3 hover:shadow-[0_0_50px_rgba(41,128,185,0.4)]"
+                onClick={() => setActiveGame('flappy')} 
+                className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#E67E22]/40 hover:border-[#E67E22] rounded-xl transition-all duration-500 flex flex-col items-center justify-center min-h-[350px] md:col-span-3 hover:shadow-[0_0_50px_rgba(230,126,34,0.4)]"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2980B9]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#010b14] to-[#041d33] opacity-20 group-hover:opacity-80 transition-all duration-700" />
-                
+                <div className="absolute inset-0 bg-gradient-to-t from-[#E67E22]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0F0A1A] to-[#1a1129] opacity-40 group-hover:opacity-80 transition-all duration-700" />
+                <div className="absolute right-0 bottom-0 w-1/2 h-full bg-[url('/homun.webp')] bg-cover bg-[center_top] mix-blend-screen opacity-10 group-hover:opacity-30 transition-all duration-[3000ms] group-hover:scale-110 group-hover:translate-x-[-10%]" />
+
                 <div className="relative z-10 flex flex-col items-center text-center w-full p-8 mt-auto h-full justify-center">
-                  <h3 className="text-4xl md:text-6xl text-white display-font mb-4 drop-shadow-[0_0_15px_rgba(133,193,233,0.8)] tracking-wider group-hover:scale-105 transition-transform">Descent of the Loxodontus</h3>
+                  <h3 className="text-4xl md:text-6xl text-white display-font mb-4 drop-shadow-[0_0_15px_rgba(230,126,34,0.8)] tracking-wider group-hover:scale-105 transition-transform">Flight of El Homun</h3>
                   <div className="overflow-hidden">
-                    <p className="text-[#85C1E9]/80 text-sm md:text-lg max-w-2xl mb-6 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                      Sink into the oceanic depths of absolute silence. Dodge the expanding orbs of Logic and Reason.
+                    <p className="text-[#E67E22]/80 text-sm md:text-lg max-w-2xl mb-6 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                      Navigate the ruined pillars of thought. Ascend against the pressure of gravity and do not crash.
                     </p>
                   </div>
-                  <span className="text-black bg-[#85C1E9] border-black font-bold tracking-[0.3em] uppercase text-xs px-10 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 shadow-xl">Sink Deep</span>
+                  <span className="text-black bg-[#E67E22] border-black font-bold tracking-[0.3em] uppercase text-xs px-10 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 shadow-xl">Take Flight</span>
                 </div>
               </div>
 

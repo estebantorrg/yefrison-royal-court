@@ -32,6 +32,7 @@ const WORD_BANK = [
   { word: "Self-Awareness", isOblivion: false },
   { word: "Regret", isOblivion: false },
   { word: "Syllogisms", isOblivion: false },
+  { word: "Federico Medel", isOblivion: false },
 ];
 
 export const TheBurdenOfChoice: React.FC = () => {
@@ -317,7 +318,7 @@ export const TheBurdenOfChoice: React.FC = () => {
 
             {/* The absolute Card */}
             <div
-              className="absolute inset-0 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center text-black cursor-grab active:cursor-grabbing border-4 border-white/10"
+              className="absolute inset-0 bg-[url('/yefris_tarot.png')] bg-cover bg-center rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center cursor-grab active:cursor-grabbing border border-[#F1C40F]/30"
               style={{
                 transform: transformStyle,
                 transition: transitionStyle,
@@ -329,27 +330,29 @@ export const TheBurdenOfChoice: React.FC = () => {
             >
               {/* Internal absolute overlays for visual feedback when dragging */}
               <div
-                className="absolute inset-0 bg-red-500/20 rounded-2xl flex items-start justify-end p-6 pointer-events-none transition-opacity duration-150"
+                className="absolute inset-0 bg-red-900/40 rounded-3xl flex items-start justify-end p-6 pointer-events-none transition-opacity duration-150 relative z-20"
                 style={{ opacity: swipeOpacityLeft }}
               >
-                <div className="border-4 border-red-500 text-red-500 font-bold text-4xl uppercase tracking-widest px-4 py-2 rounded-lg -rotate-12">
+                <div className="border-4 border-red-500 text-red-500 font-bold text-4xl uppercase tracking-widest px-4 py-2 rounded-lg -rotate-12 bg-black/50 backdrop-blur-[2px]">
                   Thought
                 </div>
               </div>
 
               <div
-                className="absolute inset-0 bg-[#F1C40F]/20 rounded-2xl flex items-start justify-start p-6 pointer-events-none transition-opacity duration-150"
+                className="absolute inset-0 bg-[#F1C40F]/40 rounded-3xl flex items-start justify-start p-6 pointer-events-none transition-opacity duration-150 relative z-20"
                 style={{ opacity: swipeOpacityRight }}
               >
-                <div className="border-4 border-[#F1C40F] text-[#F1C40F] font-bold text-4xl uppercase tracking-widest px-4 py-2 rounded-lg rotate-12">
+                <div className="border-4 border-[#F1C40F] text-[#F1C40F] font-bold text-4xl uppercase tracking-widest px-4 py-2 rounded-lg rotate-12 bg-black/50 backdrop-blur-[2px]">
                   Oblivion
                 </div>
               </div>
 
               {/* The Word */}
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight text-center px-4 leading-tight">
-                {currentWord.word}
-              </h1>
+              <div className="bg-black/60 w-full py-8 backdrop-blur-md border-y border-[#F1C40F]/30 shadow-[0_0_30px_rgba(0,0,0,0.9)] relative z-10 flex items-center justify-center min-h-[120px]">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif italic tracking-wider text-center px-6 leading-tight text-[#F1C40F] drop-shadow-[0_0_15px_rgba(241,196,15,0.8)] w-full">
+                  {currentWord.word}
+                </h1>
+              </div>
             </div>
 
             {/* Background glowing aura behind card */}
