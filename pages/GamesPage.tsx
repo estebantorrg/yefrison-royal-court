@@ -148,8 +148,8 @@ const GamesPage: React.FC = () => {
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#E67E22]/40 hover:border-[#E67E22] rounded-xl transition-all duration-500 flex flex-col items-center justify-center min-h-[350px] md:col-span-3 hover:shadow-[0_0_50px_rgba(230,126,34,0.4)]"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#E67E22]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0F0A1A] to-[#1a1129] opacity-40 group-hover:opacity-80 transition-all duration-700" />
-                <div className="absolute right-0 bottom-0 w-1/2 h-full bg-[url('/homun.webp')] bg-cover bg-[center_top] mix-blend-screen opacity-10 group-hover:opacity-30 transition-all duration-[3000ms] group-hover:scale-110 group-hover:translate-x-[-10%]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0F0A1A] to-[#1a1129] opacity-60 group-hover:opacity-80 transition-all duration-700" />
+                <div className="absolute inset-0 bg-[url('/homun.webp')] bg-no-repeat bg-center bg-contain mix-blend-screen opacity-[0.06] group-hover:opacity-[0.12] transition-all duration-[2000ms] group-hover:scale-105 pointer-events-none" />
 
                 <div className="relative z-10 flex flex-col items-center text-center w-full p-8 mt-auto h-full justify-center">
                   <h3 className="text-4xl md:text-6xl text-white display-font mb-4 drop-shadow-[0_0_15px_rgba(230,126,34,0.8)] tracking-wider group-hover:scale-105 transition-transform">Flight of El Homun</h3>
