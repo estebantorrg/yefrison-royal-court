@@ -57,6 +57,7 @@ export const TheBurdenOfChoice: React.FC = () => {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
+  const [gameOverReason, setGameOverReason] = useState<'timeout' | 'wrong' | null>(null);
 
   // Focus ref so card catches keyboard automatically if we want, but window listener is fine
 
@@ -101,6 +102,7 @@ export const TheBurdenOfChoice: React.FC = () => {
       setTimeLeft(prev => {
         if (prev <= 50) {
           clearInterval(interval);
+          setGameOverReason('timeout');
           setGameOver(true);
           setIsPlaying(false);
           return 0;
@@ -115,6 +117,7 @@ export const TheBurdenOfChoice: React.FC = () => {
   const startGame = async () => {
     setScore(0);
     setGameOver(false);
+    setGameOverReason(null);
     setIsPlaying(true);
     setScoreSubmitted(false);
     setSwipeAnim(null);
@@ -133,7 +136,7 @@ export const TheBurdenOfChoice: React.FC = () => {
   };
 
   const pickNextWord = (currentScore: number) => {
-    const nextMaxTime = Math.max(500, 2000 * Math.pow(0.95, currentScore));
+    const nextMaxTime = Math.max(1200, 3500 * Math.pow(0.97, currentScore));
     setMaxTime(nextMaxTime);
     setTimeLeft(nextMaxTime);
 
@@ -164,6 +167,7 @@ export const TheBurdenOfChoice: React.FC = () => {
         setSwipeAnim(null);
         setDragPos({ x: 0, y: 0 });
       } else {
+        setGameOverReason('wrong');
         setGameOver(true);
         setIsPlaying(false);
         setSwipeAnim(null);
@@ -395,7 +399,7 @@ export const TheBurdenOfChoice: React.FC = () => {
       {gameOver && (
         <div className="animate-fade-in z-20 w-full flex flex-col items-center text-center">
           <h2 className="display-font text-6xl text-red-500 mb-2 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">Contaminated</h2>
-          <p className="text-xl mb-6 text-white/80">You hesitated. Thought has breached your mind.</p>
+          <p className="text-xl mb-6 text-white/80">{gameOverReason === 'timeout' ? 'You hesitated too long. Thought has breached your mind.' : 'Wrong classification. The contaminant spreads.'}</p>
           <div className="text-4xl font-mono text-white font-bold mb-6 border-y border-white/20 py-4 w-full">
             Sorted: <span className="text-[#F1C40F]">{score}</span>
           </div>
