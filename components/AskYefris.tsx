@@ -539,7 +539,7 @@ export const AskYefris: React.FC = () => {
         </div>
       )}
 
-      <section id="ask-yefris" className={`lg:py-20 px-4 py-0 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isBloodMoon ? 'theme-bloodmoon' : ''}`}>
+      <section id="ask-yefris" className={`w-full lg:py-20 px-4 py-0 bg-transparent text-white flex justify-center relative z-10 text-shadow-md ${isBloodMoon ? 'theme-bloodmoon' : ''}`}>
         <div
           ref={oracleCardRef}
           className="max-w-6xl w-full bg-black/60 backdrop-blur-md text-[#F8F9FA] rounded-none lg:rounded-lg shadow-[0_0_50px_rgba(255,237,74,0.15)] border-y border-white/20 lg:border flex overflow-hidden lg:flex-row flex-col"
