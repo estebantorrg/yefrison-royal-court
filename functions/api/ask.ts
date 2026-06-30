@@ -95,14 +95,14 @@ export const onRequestPost = async (context: any) => {
     if (Array.isArray(history)) {
       validHistory = history
         .slice(-100) // Cap maliciously huge arrays
-        .filter((m: any) => typeof m.parts?.[0]?.text === 'string' && m.parts[0].text.length <= 10_000); // Cap per-message size
+        .filter((m: any) => m && typeof m.parts?.[0]?.text === 'string' && m.parts[0].text.length <= 10_000); // Cap per-message size, guard null entries
     }
 
     const apiKey = env.GEMINI_API_KEY;
     const compactApiKey = env.GEMINI_COMPACT_API_KEY;
     
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "Configuration Error", details: "No API key found in server environment." }), {
+      return new Response(JSON.stringify({ error: "Configuration Error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });

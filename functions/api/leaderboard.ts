@@ -27,6 +27,9 @@ function cleanupRateLimitMap() {
   }
 }
 
+// Allowlist of known games — prevents arbitrary KV key namespace pollution
+const VALID_GAMES = new Set(["defense", "burden", "flappy"]);
+
 const CORS_HEADERS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
@@ -41,7 +44,8 @@ export const onRequestOptions = async () => {
 export const onRequestGet = async (context: any) => {
   const { request, env } = context;
   const url = new URL(request.url);
-  const gameId = url.searchParams.get("game") || "defense";
+  const rawGame = url.searchParams.get("game") || "defense";
+  const gameId = VALID_GAMES.has(rawGame) ? rawGame : "defense";
   const kvKey = gameId === "defense" ? "top_scores" : `top_scores_${gameId}`;
 
   try {
@@ -97,7 +101,7 @@ export const onRequestPost = async (context: any) => {
     }
 
     const { name, score, sessionId, game } = body;
-    const gameId = game || "defense";
+    const gameId = VALID_GAMES.has(game) ? game : "defense";
     const kvKey = gameId === "defense" ? "top_scores" : `top_scores_${gameId}`;
 
     // ─── Input Validation ───

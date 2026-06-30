@@ -176,7 +176,7 @@ const HomePage = () => {
             <li><a onClick={handleLinkClick} href="#military" className="block text-center bg-[#E74C3C]/20 hover:bg-[#E74C3C]/40 border border-[#E74C3C]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Military Targets</a></li>
             <li><a onClick={handleLinkClick} href="#initiation" className="block text-center bg-[#2ECC71]/20 hover:bg-[#2ECC71]/40 border border-[#2ECC71]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Initiation</a></li>
             <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
-            <li><Link onClick={handleLinkClick} to="/oracle" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</Link></li>
+            <li><a onClick={handleLinkClick} href="#oracle" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
           </ul>
         </nav>
 
@@ -368,17 +368,20 @@ const HomePage = () => {
         </p>
       </div>
 
-      {/* Oracle Preview + CTA */}
-      <section className="py-20 px-4 relative z-10 flex flex-col items-center text-center">
-        <h2 className="display-font text-4xl text-[#F1C40F] mb-4">The Oracle Awaits</h2>
-        <p className="text-white/70 mb-8 max-w-md">
-          Ask Yefris your worldly questions. Seek wisdom, guidance, or pure oblivion.
-        </p>
-        <Link 
-          to="/oracle" 
-          className="px-8 py-4 bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border-2 border-[#F1C40F] text-[#F1C40F] font-bold rounded-lg uppercase tracking-[0.3em] transition-all hover:scale-105 hover:shadow-[0_0_25px_rgba(241,196,15,0.4)] text-lg display-font"
+      {/* The Oracle — embedded inline on the landing page */}
+      <section id="oracle" className="pt-20 pb-8 relative z-10 flex flex-col items-center scroll-mt-4">
+        <div className="text-center mb-8 px-4">
+          <h2 className="display-font text-4xl text-[#F1C40F] mb-4">The Oracle Awaits</h2>
+          <p className="text-white/70 max-w-md mx-auto">
+            Ask Yefris your worldly questions. Seek wisdom, guidance, or pure oblivion.
+          </p>
+        </div>
+        <AskYefris />
+        <Link
+          to="/oracle"
+          className="mt-8 text-[#F1C40F]/70 hover:text-[#F1C40F] text-xs uppercase tracking-[0.3em] transition-colors"
         >
-          Enter The Oracle →
+          Open The Oracle full-screen →
         </Link>
       </section>
 
