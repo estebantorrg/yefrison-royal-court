@@ -409,10 +409,86 @@ const ScrollToTop = () => {
   return null;
 };
 
+// ─── Per-route SEO ───
+// The app is a static SPA, so index.html ships one hardcoded <title>/canonical.
+// Without this, Google would collapse every route into the "/" canonical and
+// index none of the sub-pages distinctly. Googlebot renders JS, so updating the
+// head per route (self-referential canonical + title + description) lets each
+// route be indexed as its own page.
+const SITE_ORIGIN = 'https://yefris.pages.dev';
+
+const ROUTE_META: Record<string, { title: string; description: string }> = {
+  '/': {
+    title: 'Cult of Yefris & The Church of B.O.B. — Two Paths to Obliviousness',
+    description: 'Choose your devotion: the Cult of Yefris, or the Church of B.O.B. Two paths to happiness, success, and selective obliviousness.',
+  },
+  '/cult': {
+    title: 'The Cult of Yefris — Be Yefris in Flesh, El Homun in Soul',
+    description: 'The Yefris-El Homun Theory of Mind. A philosophy of happiness, success, and selective obliviousness. Ask Yefris your worldly questions.',
+  },
+  '/bob': {
+    title: 'The Church of B.O.B. — Brainless. Blissful. Indestructible.',
+    description: 'Benzoate Ostylezene Bicarbonate: an indestructible blue blob with no brain and no worries. The gospel of blankness and the dumbfoundedness of life. Ask the Blob anything.',
+  },
+  '/oracle': {
+    title: 'Ask Yefris — The Oracle',
+    description: 'Consult the Oracle of Yefris. Seek wisdom, guidance, or pure oblivion.',
+  },
+  '/bob/oracle': {
+    title: 'Ask the Blob — The B.O.B. Oracle',
+    description: 'Consult B.O.B. He has no brain, but he has an idea. Expect joy, confusion, and the occasional accidental wisdom.',
+  },
+  '/games': {
+    title: 'Cult Examinations — Yefris Minigames',
+    description: 'Test your synchronization with the Yefris-El Homun Theory of Mind. Play the sacred cult minigames.',
+  },
+};
+
+const setMetaByName = (name: string, content: string) => {
+  let el = document.head.querySelector(`meta[name="${name}"]`);
+  if (!el) { el = document.createElement('meta'); el.setAttribute('name', name); document.head.appendChild(el); }
+  el.setAttribute('content', content);
+};
+
+const setMetaByProperty = (property: string, content: string) => {
+  let el = document.head.querySelector(`meta[property="${property}"]`);
+  if (!el) { el = document.createElement('meta'); el.setAttribute('property', property); document.head.appendChild(el); }
+  el.setAttribute('content', content);
+};
+
+const RouteMeta = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    // Self-referential canonical: exact path (trailing slash stripped, root kept as "/").
+    const cleanPath = pathname !== '/' ? pathname.replace(/\/+$/, '') : '/';
+    const canonicalUrl = SITE_ORIGIN + (cleanPath === '/' ? '/' : cleanPath);
+
+    // Title/description: exact match, else /games family, else site default.
+    const meta = ROUTE_META[cleanPath]
+      || (cleanPath.startsWith('/games') ? ROUTE_META['/games'] : undefined)
+      || ROUTE_META['/'];
+
+    document.title = meta.title;
+    setMetaByName('description', meta.description);
+
+    let link = document.head.querySelector('link[rel="canonical"]');
+    if (!link) { link = document.createElement('link'); link.setAttribute('rel', 'canonical'); document.head.appendChild(link); }
+    link.setAttribute('href', canonicalUrl);
+
+    setMetaByProperty('og:url', canonicalUrl);
+    setMetaByProperty('og:title', meta.title);
+    setMetaByProperty('og:description', meta.description);
+    setMetaByName('twitter:title', meta.title);
+    setMetaByName('twitter:description', meta.description);
+  }, [pathname]);
+  return null;
+};
+
 const App = () => {
   return (
     <>
       <ScrollToTop />
+      <RouteMeta />
       <Routes>
         <Route path="/" element={<Gateway />} />
         <Route path="/cult" element={<HomePage />} />
