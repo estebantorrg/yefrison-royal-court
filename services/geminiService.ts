@@ -13,7 +13,9 @@ export type StreamUpdate =
   | { type: 'metadata', _oracle_meta: OracleMeta }
   | { type: 'error', error: string };
 
-export async function* askYefrisStream(question: string, history: ChatMessage[] = [], signal?: AbortSignal): AsyncGenerator<StreamUpdate, void, unknown> {
+export type OracleId = 'yefris' | 'bob';
+
+export async function* askYefrisStream(question: string, history: ChatMessage[] = [], signal?: AbortSignal, oracle: OracleId = 'yefris'): AsyncGenerator<StreamUpdate, void, unknown> {
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
     const response = await fetch('/api/ask', {
@@ -21,7 +23,7 @@ export async function* askYefrisStream(question: string, history: ChatMessage[] 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ question, history }),
+      body: JSON.stringify({ question, history, oracle }),
       signal,
     });
 

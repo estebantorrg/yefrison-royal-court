@@ -1,52 +1,34 @@
-// Yefris Service Worker — basic offline cache strategy
-const CACHE_NAME = 'yefris-v1';
-const PRECACHE_URLS = [
-  '/',
-  '/dog.png',
-  '/cherry_scom.png',
-  '/yefris_laser.png',
-  '/homun.webp',
-];
+// Yefris Service Worker — DISABLED (self-unregistering kill switch).
+//
+// The app no longer uses a service worker. Older versions registered one that
+// cached aggressively and, due to a fetch-handler bug, returned `undefined` to
+// respondWith() for cross-origin and dev module requests — breaking the page
+// ("Failed to convert value to 'Response'"). This script neutralizes any stale
+// registration still living in visitors' browsers.
+//
+// Do NOT delete this file: if sw.js 404s, the browser's update check fails and
+// the old buggy worker stays active. It must be served and byte-different so the
+// browser replaces the old worker with this harmless one.
 
-// Install: cache core assets
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-// Activate: clean old caches
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    // Purge every cache the old worker created.
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+
+    // Remove this registration entirely.
+    await self.registration.unregister();
+
+    // Take control of open pages, then reload them so they fetch fresh from
+    // the network without any worker in the way.
+    await self.clients.claim();
+    const clients = await self.clients.matchAll({ type: 'window' });
+    clients.forEach((client) => client.navigate(client.url));
+  })());
 });
 
-// Fetch: network-first for API, cache-first for assets
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-
-  // Never cache API calls
-  if (request.url.includes('/api/')) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request).then((response) => {
-        // Only cache successful same-origin responses
-        if (response.ok && request.url.startsWith(self.location.origin)) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      }).catch(() => cached); // Fallback to cache if offline
-
-      return cached || fetchPromise;
-    })
-  );
-});
+// No fetch handler: all requests go straight to the network (browser default).

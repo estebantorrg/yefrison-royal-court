@@ -181,8 +181,8 @@ const GamesPage: React.FC = () => {
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link 
-            to="/" 
+          <Link
+            to="/cult"
             className="flex items-center gap-2 text-white/60 hover:text-[#F1C40F] transition-colors text-sm uppercase tracking-widest"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
