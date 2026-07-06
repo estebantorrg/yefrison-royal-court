@@ -13,22 +13,10 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yefris.pages.dev/bob</loc>
-    <lastmod>2026-07-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>https://yefris.pages.dev/oracle</loc>
     <lastmod>2026-05-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://yefris.pages.dev/bob/oracle</loc>
-    <lastmod>2026-07-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yefris.pages.dev/games</loc>

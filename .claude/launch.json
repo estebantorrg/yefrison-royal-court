@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port", "5173"],
       "port": 5173
+    },
+    {
+      "name": "bob-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "C:\\Users\\Esteban\\Desktop\\church-of-bob", "--", "--port", "5174"],
+      "port": 5174
     }
   ]
 }

@@ -91,25 +91,10 @@ h1, h2, h3, h4, h5, h6, .display-font {
 }
 
 /* ─────────────────────────────────────────────
-   THE CHURCH OF B.O.B. — periwinkle gelatin theme
+   Gateway goo helpers — the B.O.B. panel on the
+   gateway renders a pure-CSS blob linking to his
+   external site (churchofbob.pages.dev).
    ───────────────────────────────────────────── */
-
-:root {
-  --bob-base: #6C7AE0;
-  --bob-glow: #9AA9FF;
-  --bob-light: #C7D0FF;
-  --bob-deep: #14152E;
-  --bob-eye: #EEF2FF;
-}
-
-/* Gelatinous jiggle for the blob mascot */
-@keyframes blob-wobble {
-  0%, 100% { transform: scale(1, 1) rotate(0deg); }
-  25%      { transform: scale(1.04, 0.94) rotate(-1.5deg); }
-  50%      { transform: scale(0.96, 1.05) rotate(0deg); }
-  75%      { transform: scale(1.03, 0.97) rotate(1.5deg); }
-}
-.blob-wobble { animation: blob-wobble 4.5s ease-in-out infinite; transform-origin: center bottom; }
 
 @keyframes blob-float {
   0%, 100% { transform: translateY(0); }
@@ -138,18 +123,3 @@ h1, h2, h3, h4, h5, h6, .display-font {
   .gateway-split:hover .gateway-panel { flex: 1 1 0%; filter: brightness(0.6) saturate(0.7); }
   .gateway-split .gateway-panel:hover { flex: 2.2 1 0%; filter: brightness(1) saturate(1.1); }
 }
-
-/* B.O.B. Oracle Markdown — indigo links inside the goo bubbles */
-.bob-markdown p { margin-bottom: 0.5em; }
-.bob-markdown p:last-child { margin-bottom: 0; }
-.bob-markdown strong { font-weight: 700; color: var(--bob-light); }
-.bob-markdown em { font-style: italic; }
-.bob-markdown ul, .bob-markdown ol { padding-left: 1.25em; margin: 0.5em 0; }
-.bob-markdown li { margin-bottom: 0.25em; }
-.bob-markdown a { color: var(--bob-glow); text-decoration: underline; text-underline-offset: 2px; }
-.bob-markdown a:hover { color: var(--bob-light); }
-.bob-markdown code { background: rgba(154,169,255,0.12); padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.9em; }
-.bob-markdown pre { background: rgba(154,169,255,0.08); padding: 0.75em; border-radius: 6px; overflow-x: auto; margin: 0.5em 0; }
-.bob-markdown pre code { background: none; padding: 0; }
-.bob-markdown h1, .bob-markdown h2, .bob-markdown h3 { font-weight: 700; margin: 0.75em 0 0.25em; }
-.bob-markdown blockquote { border-left: 3px solid var(--bob-glow); padding-left: 0.75em; margin: 0.5em 0; opacity: 0.85; }

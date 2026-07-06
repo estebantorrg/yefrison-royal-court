@@ -8,8 +8,6 @@ import { WoofsPerSecond } from './components/WoofsPerSecond';
 import OraclePage from './pages/OraclePage';
 import GamesPage from './pages/GamesPage';
 import Gateway from './pages/Gateway';
-import BobPage from './pages/BobPage';
-import BobOraclePage from './pages/BobOraclePage';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
@@ -180,7 +178,7 @@ const HomePage = () => {
             <li><a onClick={handleLinkClick} href="#initiation" className="block text-center bg-[#2ECC71]/20 hover:bg-[#2ECC71]/40 border border-[#2ECC71]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Initiation</a></li>
             <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
             <li><a onClick={handleLinkClick} href="#oracle" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
-            <li className="pt-2 mt-2 border-t border-white/10"><Link onClick={handleLinkClick} to="/bob" className="block text-center bg-[#6C7AE0]/15 hover:bg-[#6C7AE0]/35 border border-[#6C7AE0]/50 text-[#9AA9FF] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">⇄ The Church of B.O.B.</Link></li>
+            <li className="pt-2 mt-2 border-t border-white/10"><a href="https://churchofbob.pages.dev" className="block text-center bg-[#6C7AE0]/15 hover:bg-[#6C7AE0]/35 border border-[#6C7AE0]/50 text-[#9AA9FF] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">⇄ The Church of B.O.B.</a></li>
             <li><Link onClick={handleLinkClick} to="/" className="block text-center text-white/50 hover:text-white py-2 px-4 text-xs uppercase tracking-[0.3em] transition-all">← Gateway</Link></li>
           </ul>
         </nav>
@@ -426,17 +424,9 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
     title: 'The Cult of Yefris — Be Yefris in Flesh, El Homun in Soul',
     description: 'The Yefris-El Homun Theory of Mind. A philosophy of happiness, success, and selective obliviousness. Ask Yefris your worldly questions.',
   },
-  '/bob': {
-    title: 'The Church of B.O.B. — Brainless. Blissful. Indestructible.',
-    description: 'Benzoate Ostylezene Bicarbonate: an indestructible blue blob with no brain and no worries. The gospel of blankness and the dumbfoundedness of life. Ask the Blob anything.',
-  },
   '/oracle': {
     title: 'Ask Yefris — The Oracle',
     description: 'Consult the Oracle of Yefris. Seek wisdom, guidance, or pure oblivion.',
-  },
-  '/bob/oracle': {
-    title: 'Ask the Blob — The B.O.B. Oracle',
-    description: 'Consult B.O.B. He has no brain, but he has an idea. Expect joy, confusion, and the occasional accidental wisdom.',
   },
   '/games': {
     title: 'Cult Examinations — Yefris Minigames',
@@ -492,8 +482,6 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Gateway />} />
         <Route path="/cult" element={<HomePage />} />
-        <Route path="/bob" element={<BobPage />} />
-        <Route path="/bob/oracle" element={<BobOraclePage />} />
         <Route path="/oracle" element={<OraclePage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/games/:gameSlug" element={<GamesPage />} />

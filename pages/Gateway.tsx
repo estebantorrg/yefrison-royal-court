@@ -41,9 +41,9 @@ const Gateway: React.FC = () => {
           </div>
         </Link>
 
-        {/* ─── B.O.B. ─── */}
-        <Link
-          to="/bob"
+        {/* ─── B.O.B. (external — lives on his own site now) ─── */}
+        <a
+          href="https://churchofbob.pages.dev"
           className="gateway-panel group flex-1 relative flex flex-col items-center justify-center p-8 min-h-[50vh] md:min-h-screen overflow-hidden"
           style={{
             backgroundImage:
@@ -55,7 +55,13 @@ const Gateway: React.FC = () => {
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="relative mb-8 blob-float">
               <div className="absolute -inset-3 bg-[#6C7AE0] rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition duration-700" />
-              <img src="/bob/bob_main.webp" alt="B.O.B." className="relative w-40 h-40 md:w-52 md:h-52 object-contain drop-shadow-2xl blob-wobble group-hover:scale-105 transition-transform duration-500" />
+              {/* Pure-CSS goo: the blob assets moved to his own repo */}
+              <div className="relative w-40 h-40 md:w-52 md:h-52 blob-morph group-hover:scale-105 transition-transform duration-500 flex items-center justify-center"
+                   style={{ background: 'radial-gradient(circle at 35% 30%, #9AA9FF 0%, #6C7AE0 45%, #3A3F8F 100%)', boxShadow: '0 10px 40px rgba(108,122,224,0.45), inset 0 -12px 30px rgba(0,0,0,0.35)' }}>
+                <div className="bob-blink w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center shadow-inner">
+                  <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#14152E]" />
+                </div>
+              </div>
             </div>
             <h2 className="display-font text-3xl md:text-5xl text-[#9AA9FF] tracking-wider drop-shadow-md">The Church of B.O.B.</h2>
             <p className="mt-4 max-w-xs text-sm md:text-base text-white/70 leading-relaxed">
@@ -65,7 +71,7 @@ const Gateway: React.FC = () => {
               Embrace the Goo →
             </span>
           </div>
-        </Link>
+        </a>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 z-30 pb-5 text-center pointer-events-none">
