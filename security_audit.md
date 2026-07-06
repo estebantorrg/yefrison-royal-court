@@ -41,3 +41,21 @@
 
 ## Conclusion
 The application is visually stunning but has a critical functional flaw regarding chat memory and minor architectural vulnerabilities concerning API key naming and input validation. Immediate remediation is strongly advised.
+
+---
+
+## Remediation Status (updated 2026-07-05)
+
+This audit is a historical point-in-time document. All findings have since been remediated:
+
+| Finding | Status |
+|---|---|
+| 1.1 Secret exposure (`VITE_` prefix) | ✅ Fixed — env var renamed to `GEMINI_API_KEY` (plus optional `GEMINI_COMPACT_API_KEY`), backend-only. |
+| 1.2 Unvalidated URI execution | ✅ Fixed — grounding source URIs are filtered to `http://`/`https://` before rendering (`AskYefris.tsx`). |
+| 1.3 Missing rate limiting / payload validation | ✅ Fixed — per-IP in-memory rate limiting on `/api/ask` (60/min) and `/api/leaderboard` (15/min); question capped at 5,000 chars; history capped at 100 messages × 10,000 chars each. |
+| 2.1 Loss of chat history | ✅ Fixed — history is validated, optionally compacted via a secondary model, and included in the Gemini payload. |
+| 2.2 Unhandled JSON body parsing | ✅ Fixed — `request.json()` wrapped in try/catch returning a proper 400. |
+| 2.3 Massive share card canvas | ✅ Mitigated — pixel ratio downscales to 1 when card height exceeds 2,000px (`ShareCard.tsx`). |
+| 2.4 Scrollbar styling bleed | ✅ Mitigated — `scrollbar-width: thin` fallback for non-WebKit browsers. |
+
+Additional hardening added after the audit: server-side anti-cheat session tokens for leaderboard submissions (`/api/game-session`, single-use, 10-min TTL) and a game-ID allowlist for KV keys.

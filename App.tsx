@@ -417,8 +417,8 @@ const SITE_ORIGIN = 'https://yefris.pages.dev';
 
 const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/': {
-    title: 'Cult of Yefris & The Church of B.O.B. — Two Paths to Obliviousness',
-    description: 'Choose your devotion: the Cult of Yefris, or the Church of B.O.B. Two paths to happiness, success, and selective obliviousness.',
+    title: 'Cult of Yefris — Two Paths to Obliviousness',
+    description: 'Choose your devotion: the Cult of Yefris, or cross over to the Church of B.O.B. at churchofbob.pages.dev. Two paths to happiness, success, and selective obliviousness.',
   },
   '/cult': {
     title: 'The Cult of Yefris — Be Yefris in Flesh, El Homun in Soul',
