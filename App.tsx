@@ -8,6 +8,7 @@ import { WoofsPerSecond } from './components/WoofsPerSecond';
 import OraclePage from './pages/OraclePage';
 import GamesPage from './pages/GamesPage';
 import Gateway from './pages/Gateway';
+import NotFound from './pages/NotFound';
 
 const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: string }> = ({ children, delay = 0, id }) => (
   <section id={id} className="min-h-[70vh] flex items-center justify-center p-8 px-4 relative z-10 w-full" style={{ transitionDelay: `${delay}ms` }}>
@@ -485,6 +486,7 @@ const App = () => {
         <Route path="/oracle" element={<OraclePage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/games/:gameSlug" element={<GamesPage />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
