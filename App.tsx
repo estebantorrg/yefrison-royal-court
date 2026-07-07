@@ -179,7 +179,7 @@ const HomePage = () => {
             <li><a onClick={handleLinkClick} href="#initiation" className="block text-center bg-[#2ECC71]/20 hover:bg-[#2ECC71]/40 border border-[#2ECC71]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Initiation</a></li>
             <li><a onClick={handleLinkClick} href="#celebrities" className="block text-center bg-[#F39C12]/20 hover:bg-[#F39C12]/40 border border-[#F39C12]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">Celebrities</a></li>
             <li><a onClick={handleLinkClick} href="#oracle" className="block text-center bg-[#F1C40F]/20 hover:bg-[#F1C40F]/40 border border-[#F1C40F]/50 text-[#F8F9FA] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">The Oracle</a></li>
-            <li className="pt-2 mt-2 border-t border-white/10"><a href="https://benzoate-ostylezene-bicarbonate.pages.dev/" className="block text-center bg-[#6C7AE0]/15 hover:bg-[#6C7AE0]/35 border border-[#6C7AE0]/50 text-[#9AA9FF] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">⇄ The Church of B.O.B.</a></li>
+            <li className="pt-2 mt-2 border-t border-white/10"><a href="https://benzoate-ostylezene-bicarbonate.pages.dev/church" className="block text-center bg-[#6C7AE0]/15 hover:bg-[#6C7AE0]/35 border border-[#6C7AE0]/50 text-[#9AA9FF] py-3 px-4 font-bold tracking-wider transition-all hover:scale-[1.02]">⇄ The Church of B.O.B.</a></li>
             <li><Link onClick={handleLinkClick} to="/" className="block text-center text-white/50 hover:text-white py-2 px-4 text-xs uppercase tracking-[0.3em] transition-all">← Gateway</Link></li>
           </ul>
         </nav>
