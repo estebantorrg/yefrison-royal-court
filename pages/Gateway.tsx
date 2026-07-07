@@ -43,7 +43,7 @@ const Gateway: React.FC = () => {
 
         {/* ─── B.O.B. (external — lives on his own site now) ─── */}
         <a
-          href="https://benzoate-ostylezene-bicarbonate.pages.dev/"
+          href="https://benzoate-ostylezene-bicarbonate.pages.dev/church"
           className="gateway-panel group flex-1 relative flex flex-col items-center justify-center p-8 min-h-[50vh] md:min-h-screen overflow-hidden"
           style={{
             backgroundImage:
