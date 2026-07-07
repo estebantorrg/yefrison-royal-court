@@ -2,7 +2,7 @@
 
 This document provides a high-level technical overview of the Yefrison Royal Court web application. It aims to explain how the various systems interact and are implemented, without exposing raw secrets or sensitive operational configurations.
 
-> **Note:** The Church of B.O.B. realm was split out of this codebase into its own repository and Cloudflare Pages deployment (churchofbob.pages.dev). The Gateway landing page (`/`) links to it externally; everything below describes the Yefris site only.
+> **Note:** The Church of B.O.B. realm was split out of this codebase into its own repository and Cloudflare Pages deployment (benzoate-ostylezene-bicarbonate.pages.dev). The Gateway landing page (`/`) links to it externally; everything below describes the Yefris site only.
 
 ## System Topology & Infrastructure
 

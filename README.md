@@ -5,7 +5,7 @@ An interactive web application built to showcase the full software development l
 **➡️ LIVE DEMO 🚀**
 **[https://yefris.pages.dev/](https://yefris.pages.dev/)**
 
-> **Sister site:** The Church of B.O.B. — originally a second realm inside this app — now lives in its own repository and deployment at **[https://churchofbob.pages.dev/](https://churchofbob.pages.dev/)**. The Gateway landing page (`/`) links both devotions.
+> **Sister site:** The Church of B.O.B. — originally a second realm inside this app — now lives in its own repository and deployment at **[https://benzoate-ostylezene-bicarbonate.pages.dev/](https://benzoate-ostylezene-bicarbonate.pages.dev/)**. The Gateway landing page (`/`) links both devotions.
 
 ## Main Features
 *   **The Gateway (`/`):** A split landing page where visitors choose their devotion: the Cult of Yefris (this site) or the Church of B.O.B. (external sister site).
@@ -39,7 +39,7 @@ This project was a masterclass in the real-world software lifecycle.
 3. **The SSE Streaming Era:** The initial API request blocked UI interactions for highly accurate but slow processing time. The `ask.ts` backend was overhauled into an asynchronous Edge function, and `geminiService.ts` was rewritten to render chunks natively using an `AsyncGenerator`, dropping the perceived latency by orders of magnitude.
 4. **Overcoming Deployment Hurdles:** Early versions failed to deploy due to complex serverless functions attempting to hide API keys on basic tier hosts. The solution was migrating the CI/CD pipeline exclusively to Cloudflare Pages, taking advantage of edge networking for lightning-fast site delivery.
 5. **The Final Polish:** Implementing TailwindCSS, dynamic intersection observers for YouTube autoplay, and adding seamless CSS mask-image fades to polish the UI into a fully professional web app.
-6. **The Great Schism:** The Church of B.O.B. realm grew large enough to deserve its own identity and was split into a standalone repository and Cloudflare Pages deployment (churchofbob.pages.dev), keeping this repo focused on the Cult of Yefris.
+6. **The Great Schism:** The Church of B.O.B. realm grew large enough to deserve its own identity and was split into a standalone repository and Cloudflare Pages deployment (benzoate-ostylezene-bicarbonate.pages.dev), keeping this repo focused on the Cult of Yefris.
 
 ## Oracle Error Index
 
