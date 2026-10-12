@@ -32,6 +32,18 @@ const loadingPhrases = [
   'yefris is flibbertigibberting...',
 ];
 
+const SESSIONS_KEY = 'yefris_chat_sessions';
+
+const readStoredSessions = (): ChatSession[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error("Failed to parse chat sessions");
+    return [];
+  }
+};
+
 export const AskYefris: React.FC = () => {
   const [question, setQuestion] = useState('');
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -54,6 +66,7 @@ export const AskYefris: React.FC = () => {
   const oracleCardRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const homunTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const deletedSessionIds = useRef(new Set<string>());
 
   // Set correct height on Oracle card: full svh on mobile, 85vh on desktop
   useEffect(() => {
@@ -122,19 +135,11 @@ export const AskYefris: React.FC = () => {
 
   // Load history from local storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('yefris_chat_sessions');
-    let loadedSessions: ChatSession[] = [];
-    
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          loadedSessions = parsed;
-        }
-      } catch (e) {
-        console.error("Failed to parse chat sessions");
-      }
-    }
+    // Drop answer placeholders left behind by a reload mid-answer, so the question can be retried
+    const loadedSessions = readStoredSessions().map(s => ({
+      ...s,
+      messages: s.messages.filter(m => m.role === 'user' || m.text)
+    }));
 
     if (loadedSessions.length > 0) {
       // Find if we already have an empty session to avoid spamming them
@@ -171,17 +176,26 @@ export const AskYefris: React.FC = () => {
 
   useEffect(() => {
     if (sessions.length > 0) {
+      // Another tab may have saved since this one loaded: keep its threads, and its copy of a shared thread when newer
+      const stored = readStoredSessions();
+      const merged = [
+        ...sessions.map(mine => {
+          const theirs = stored.find(s => s.id === mine.id);
+          return theirs && theirs.updatedAt > mine.updatedAt ? theirs : mine;
+        }),
+        ...stored.filter(s => !sessions.some(mine => mine.id === s.id) && !deletedSessionIds.current.has(s.id))
+      ];
       try {
-        localStorage.setItem('yefris_chat_sessions', JSON.stringify(sessions));
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(merged));
       } catch (e) {
         // Storage quota exceeded — prune oldest sessions and retry
         console.warn('localStorage quota exceeded, pruning old sessions');
-        const pruned = sessions.slice(0, Math.max(5, Math.ceil(sessions.length / 2)));
+        const pruned = merged.slice(0, Math.max(5, Math.ceil(merged.length / 2)));
         try {
-          localStorage.setItem('yefris_chat_sessions', JSON.stringify(pruned));
+          localStorage.setItem(SESSIONS_KEY, JSON.stringify(pruned));
         } catch (_) {
           // Still failing — clear it entirely
-          localStorage.removeItem('yefris_chat_sessions');
+          localStorage.removeItem(SESSIONS_KEY);
         }
       }
     }
@@ -229,6 +243,7 @@ export const AskYefris: React.FC = () => {
 
   const deleteSession = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
+    deletedSessionIds.current.add(id);
     setSessions(prev => {
       const remaining = prev.filter(s => s.id !== id);
       if (remaining.length === 0) {
@@ -238,7 +253,6 @@ export const AskYefris: React.FC = () => {
           id: newId, title: 'New Divination', createdAt: Date.now(), updatedAt: Date.now(), messages: []
         };
         setActiveSessionId(newId);
-        localStorage.removeItem('yefris_chat_sessions');
         return [freshSession];
       }
       if (activeSessionId === id) {
@@ -257,7 +271,7 @@ export const AskYefris: React.FC = () => {
   const saveEdit = () => {
     if (editingSessionId && editTitleBuffer.trim() !== '') {
       setSessions(prev => prev.map(s =>
-        s.id === editingSessionId ? { ...s, title: editTitleBuffer.trim() } : s
+        s.id === editingSessionId ? { ...s, title: editTitleBuffer.trim(), updatedAt: Date.now() } : s
       ));
     }
     setEditingSessionId(null);
@@ -314,6 +328,7 @@ export const AskYefris: React.FC = () => {
       }));
 
       let isFirstChunk = true;
+      let gotContent = false;
       let finalMeta: any = undefined;
 
       // Start streaming
@@ -336,11 +351,12 @@ export const AskYefris: React.FC = () => {
               if (mIdx !== -1) {
                 msgs[mIdx] = { ...msgs[mIdx], meta: update._oracle_meta };
               }
-              return { ...session, messages: msgs };
+              return { ...session, updatedAt: Date.now(), messages: msgs };
             }
             return session;
           }));
         } else if (update.type === 'content') {
+          gotContent = true;
           // Append text chunk
           setSessions(prev => prev.map(session => {
             if (session.id === activeSessionId) {
@@ -349,12 +365,15 @@ export const AskYefris: React.FC = () => {
               if (mIdx !== -1) {
                 msgs[mIdx] = { ...msgs[mIdx], text: msgs[mIdx].text + update.text };
               }
-              return { ...session, messages: msgs };
+              return { ...session, updatedAt: Date.now(), messages: msgs };
             }
             return session;
           }));
         }
       }
+
+      // An empty answer must fail loudly, or the question is left with no reply and no retry button
+      if (!gotContent) throw new Error('yefris had nothing to say. try again.');
 
     } catch (err: any) {
       if (err.name === 'AbortError' || currentAbortController.signal.aborted) {
@@ -367,7 +386,7 @@ export const AskYefris: React.FC = () => {
       setSessions(prev => prev.map(session => {
         if (session.id === activeSessionId) {
           const msgs = session.messages.filter(m => m.text !== ''); // clean up empty placeholder
-          return { ...session, messages: msgs };
+          return { ...session, updatedAt: Date.now(), messages: msgs };
         }
         return session;
       }));
@@ -477,6 +496,7 @@ export const AskYefris: React.FC = () => {
       if (session.id === activeSessionId) {
         return {
           ...session,
+          updatedAt: Date.now(),
           messages: session.messages.slice(0, -1)
         };
       }

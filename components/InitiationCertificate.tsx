@@ -1,5 +1,5 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { toPng } from 'html-to-image';
+import React, { useRef, useState, useEffect } from 'react';
+import { useCardImage } from './useCardImage';
 
 const TITLES = [
   "Practitioner of Selective Obliviousness",
@@ -12,57 +12,13 @@ const TITLES = [
 export const InitiationCertificate: React.FC = () => {
   const [name, setName] = useState('');
   const [title, setTitle] = useState(TITLES[0]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { isGenerating, generatedImage, setGeneratedImage, isCopied, generateImage, download, copyToClipboard } = useCardImage(cardRef);
 
   useEffect(() => {
     // Random title on mount
     setTitle(TITLES[Math.floor(Math.random() * TITLES.length)]);
   }, []);
-
-  const generateImage = useCallback(async () => {
-    if (!cardRef.current || !name.trim()) return;
-    setIsGenerating(true);
-
-    try {
-      await new Promise(r => setTimeout(r, 150)); // layout calculation wait
-      const dataUrl = await toPng(cardRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        style: { margin: '0' } // Clear any margin affecting the export
-      });
-      setGeneratedImage(dataUrl);
-    } catch (err) {
-      console.error('Failed to generate certificate:', err);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [name]);
-
-  const handleDownload = () => {
-    if (!generatedImage) return;
-    const link = document.createElement('a');
-    link.download = `cult-initiation-${name.replace(/\s+/g, '-').toLowerCase()}.png`;
-    link.href = generatedImage;
-    link.click();
-  };
-
-  const handleCopyToClipboard = async () => {
-    if (!generatedImage) return;
-    try {
-      const response = await fetch(generatedImage);
-      const blob = await response.blob();
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 1500);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto p-4">
@@ -99,7 +55,7 @@ export const InitiationCertificate: React.FC = () => {
             <p className="text-sm uppercase tracking-widest text-[#F1C40F]/60 mb-2">Certificate Forged</p>
             <div className="flex gap-4">
               <button
-                onClick={handleDownload}
+                onClick={() => download(`cult-initiation-${name.replace(/\s+/g, '-').toLowerCase()}.png`)}
                 className="flex items-center gap-2 px-5 py-2.5 bg-[#E67E22] hover:bg-[#D35400] text-white font-bold rounded-lg shadow-[0_0_15px_rgba(230,126,34,0.4)] transition-all duration-200 text-sm uppercase tracking-wider"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,7 +64,7 @@ export const InitiationCertificate: React.FC = () => {
                 Download
               </button>
               <button
-                onClick={handleCopyToClipboard}
+                onClick={copyToClipboard}
                 className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-all duration-200 border border-white/20 text-sm uppercase tracking-wider"
               >
                 {isCopied ? 'Copied!' : 'Copy'}
@@ -161,7 +117,7 @@ export const InitiationCertificate: React.FC = () => {
             background: 'radial-gradient(circle, rgba(241,196,15,0.2) 0%, transparent 70%)',
             overflow: 'hidden',
           }}>
-            <img src="/dog.png" alt="Yefris" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/dog.webp" alt="Yefris" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           <h2 style={{ color: '#E67E22', fontSize: '24px', letterSpacing: '8px', textTransform: 'uppercase', marginBottom: '16px', fontWeight: 'bold' }}>

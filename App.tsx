@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { AskYefris } from './components/AskYefris';
-import { ElHomunStare } from './components/ElHomunStare';
 import { InitiationCertificate } from './components/InitiationCertificate';
-import { YefrisLaserDefense } from './components/YefrisLaserDefense';
-import { WoofsPerSecond } from './components/WoofsPerSecond';
 import OraclePage from './pages/OraclePage';
 import GamesPage from './pages/GamesPage';
 import Gateway from './pages/Gateway';
@@ -18,57 +15,26 @@ const CultSection: React.FC<{ children: React.ReactNode, delay?: number, id?: st
   </section>
 );
 
-const CultExaminationsModule = () => {
-  const [activeGame, setActiveGame] = useState<'menu' | 'homun' | 'defense' | 'woofs'>('menu');
-
-  if (activeGame === 'homun') {
-    return (
-      <div className="w-full relative mt-12 animate-fade-in-up" key="homun">
-        <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#85C1E9] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
-        <ElHomunStare />
-      </div>
-    );
-  }
-
-  if (activeGame === 'defense') {
-    return (
-      <div className="w-full relative mt-12 animate-fade-in-up" key="defense">
-        <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#E74C3C] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
-        <YefrisLaserDefense />
-      </div>
-    );
-  }
-
-  if (activeGame === 'woofs') {
-    return (
-      <div className="w-full relative mt-12 animate-fade-in-up" key="woofs">
-        <button onClick={() => setActiveGame('menu')} className="absolute -top-12 left-0 text-[#F1C40F] hover:text-white uppercase tracking-widest text-sm transition-colors">&larr; Back to Menu</button>
-        <WoofsPerSecond />
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto mt-8 animate-fade-in" key="menu">
-      <div onClick={() => setActiveGame('homun')} className="cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] p-8 rounded-xl transition-all hover:bg-[#85C1E9]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
-        <h3 className="text-xl text-[#85C1E9] display-font mb-3 group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
-        <p className="text-white/70 text-xs">Test your soul's synchronization. Can you remain perfectly still?</p>
-      </div>
-      <div onClick={() => setActiveGame('defense')} className="cursor-pointer group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] p-8 rounded-xl transition-all hover:bg-[#E74C3C]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
-        <h3 className="text-xl text-[#E74C3C] display-font mb-3 group-hover:scale-105 transition-transform">Yefris Laser Defense</h3>
-        <p className="text-white/70 text-xs">Test your ocular reflexes. Eliminate the obsolete anomalies.</p>
-      </div>
-      <div onClick={() => setActiveGame('woofs')} className="cursor-pointer group bg-black/40 border border-[#F1C40F]/30 hover:border-[#F1C40F] p-8 rounded-xl transition-all hover:bg-[#F1C40F]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
-        <h3 className="text-xl text-[#F1C40F] display-font mb-3 group-hover:scale-105 transition-transform">Woofs Per Minute</h3>
-        <p className="text-white/70 text-xs">Transcribe sacred cult scriptures. How fast can your devotion flow?</p>
-      </div>
-    </div>
-  );
-};
+const CultExaminationsModule = () => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto mt-8 animate-fade-in">
+    <Link to="/games/el-homun" className="group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] p-8 rounded-xl transition-all hover:bg-[#85C1E9]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
+      <h3 className="text-xl text-[#85C1E9] display-font mb-3 group-hover:scale-105 transition-transform">The Stare of El Homun</h3>
+      <p className="text-white/70 text-xs">Test your soul's synchronization. Can you remain perfectly still?</p>
+    </Link>
+    <Link to="/games/laser-defense" className="group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] p-8 rounded-xl transition-all hover:bg-[#E74C3C]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
+      <h3 className="text-xl text-[#E74C3C] display-font mb-3 group-hover:scale-105 transition-transform">Yefris Laser Defense</h3>
+      <p className="text-white/70 text-xs">Test your ocular reflexes. Eliminate the obsolete anomalies.</p>
+    </Link>
+    <Link to="/games/woofs" className="group bg-black/40 border border-[#F1C40F]/30 hover:border-[#F1C40F] p-8 rounded-xl transition-all hover:bg-[#F1C40F]/10 text-center flex flex-col items-center justify-center min-h-[220px]">
+      <h3 className="text-xl text-[#F1C40F] display-font mb-3 group-hover:scale-105 transition-transform">Woofs Per Minute</h3>
+      <p className="text-white/70 text-xs">Transcribe sacred cult scriptures. How fast can your devotion flow?</p>
+    </Link>
+  </div>
+);
 
 const HomePage = () => {
   const [hasReachedVideo, setHasReachedVideo] = useState(false);
-  const [scrollP, setScrollP] = useState(0);
+  const pageRef = useRef<HTMLDivElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -81,7 +47,11 @@ const HomePage = () => {
       const sh = 'scrollHeight';
       const scrollHeight = (h[sh] || b[sh]) - h.clientHeight;
       let percent = scrollHeight > 0 ? ((h[st] || b[st]) / scrollHeight) * 110 : 0;
-      setScrollP(Math.min(100, Math.max(0, percent)));
+      const scrollP = Math.min(100, Math.max(0, percent));
+      // Set outside React state: a state update here would re-render the whole page on every scroll event
+      if (pageRef.current) {
+        pageRef.current.style.backgroundImage = `radial-gradient(ellipse at center bottom, rgba(255, 245, 180, ${Math.min(0.8, scrollP / 120)}) 0%, rgba(200, 150, 20, ${Math.min(0.4, scrollP / 180)}) 30%, transparent 80%)`;
+      }
     };
     
     window.addEventListener('scroll', handleScroll);
@@ -113,7 +83,6 @@ const HomePage = () => {
 
   const bgStyle = {
     backgroundColor: '#050505',
-    backgroundImage: `radial-gradient(ellipse at center bottom, rgba(255, 245, 180, ${Math.min(0.8, scrollP / 120)}) 0%, rgba(200, 150, 20, ${Math.min(0.4, scrollP / 180)}) 30%, transparent 80%)`,
     backgroundAttachment: 'fixed',
   };
 
@@ -121,7 +90,7 @@ const HomePage = () => {
   const headerColor = '#85C1E9';
 
     return (
-    <div style={bgStyle} className="min-h-screen font-sans selection:bg-[#F1C40F] selection:text-black">
+    <div ref={pageRef} style={bgStyle} className="min-h-screen font-sans selection:bg-[#F1C40F] selection:text-black">
       
       {/* Floating Desktop Menu Button (visible only when desktop menu is CLOSED) */}
       <div className={`hidden ${!isDesktopMenuOpen ? 'lg:flex' : ''} fixed top-6 left-6 z-[60]`}>
@@ -264,7 +233,7 @@ const HomePage = () => {
         </p>
         <div className="flex justify-center mt-8">
           <img 
-            src="/yefris_laser.png" 
+            src="/yefris_laser.webp" 
             alt="Yefris with lasers" 
             className="w-full max-w-lg rounded border border-red-500 shadow-[0_0_20px_rgba(231,76,60,0.4)]"
           />
@@ -361,7 +330,7 @@ const HomePage = () => {
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-[#F1C40F] via-[#E67E22] to-[#F1C40F] rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-spin-slow"></div>
           <img 
-            src="/dog.png" 
+            src="/dog.webp" 
             alt="The Glorious Yefris" 
             className="relative w-64 h-64 md:w-96 md:h-96 rounded-full object-cover border-8 border-white shadow-2xl"
           />

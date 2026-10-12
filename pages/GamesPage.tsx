@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ElHomunStare } from '../components/ElHomunStare';
 import { YefrisLaserDefense } from '../components/YefrisLaserDefense';
@@ -18,13 +18,8 @@ const GAME_MAP: Record<string, GameId> = {
 
 const GamesPage: React.FC = () => {
   const { gameSlug } = useParams<{ gameSlug?: string }>();
-  const initialGame: GameId = (gameSlug && GAME_MAP[gameSlug]) || 'menu';
-  const [activeGame, setActiveGame] = useState<GameId>(initialGame);
-
-  // Scroll to top when switching games
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [activeGame]);
+  // The URL is the single source of truth for the open game
+  const activeGame: GameId = (gameSlug && GAME_MAP[gameSlug]) || 'menu';
 
   const renderGame = () => {
     switch (activeGame) {
@@ -68,12 +63,12 @@ const GamesPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto h-full">
               
               {/* Defense Card */}
-              <div 
-                onClick={() => setActiveGame('defense')} 
+              <Link
+                to="/games/laser-defense"
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#E74C3C]/30 hover:border-[#E74C3C] rounded-xl transition-all duration-500 hover:shadow-[0_0_30px_rgba(231,76,60,0.3)] flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px] md:col-span-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#E74C3C]/20 via-[#E74C3C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-[url('/dog.png')] bg-cover bg-center mix-blend-lighten opacity-10 group-hover:opacity-40 transition-all duration-700 group-hover:scale-[1.15]" />
+                <div className="absolute inset-0 bg-[url('/dog.webp')] bg-cover bg-center mix-blend-lighten opacity-10 group-hover:opacity-40 transition-all duration-700 group-hover:scale-[1.15]" />
                 
                 <div className="relative z-10 flex flex-col items-center text-center mt-auto w-full bg-gradient-to-t from-black via-black/90 to-transparent p-6 pt-24 h-full justify-end">
                   <h3 className="text-3xl text-[#E74C3C] display-font mb-2 drop-shadow-md tracking-wider group-hover:scale-105 transition-transform">Laser Defense</h3>
@@ -84,11 +79,11 @@ const GamesPage: React.FC = () => {
                   </div>
                   <span className="text-[#E74C3C] font-bold tracking-[0.3em] uppercase text-xs border border-[#E74C3C] px-6 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">Play</span>
                 </div>
-              </div>
+              </Link>
 
               {/* Homun Card */}
-              <div 
-                onClick={() => setActiveGame('homun')} 
+              <Link
+                to="/games/el-homun"
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#85C1E9]/30 hover:border-[#85C1E9] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(133,193,233,0.3)] flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px] md:col-span-2"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#85C1E9]/20 via-[#85C1E9]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -103,11 +98,11 @@ const GamesPage: React.FC = () => {
                   </div>
                   <span className="text-[#85C1E9] font-bold tracking-[0.3em] uppercase text-xs border border-[#85C1E9] px-6 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">Initiate</span>
                 </div>
-              </div>
+              </Link>
 
               {/* Woofs Card */}
-              <div 
-                onClick={() => setActiveGame('woofs')} 
+              <Link
+                to="/games/woofs"
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#F1C40F]/30 hover:border-[#F1C40F] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(241,196,15,0.2)] flex flex-col items-center justify-center min-h-[250px] md:min-h-[300px] md:col-span-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F1C40F]/5 via-transparent to-[#F1C40F]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -121,15 +116,15 @@ const GamesPage: React.FC = () => {
                   </div>
                   <span className="text-[#F1C40F] font-bold tracking-[0.3em] uppercase text-xs border border-[#F1C40F] px-8 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">Transcribe</span>
                 </div>
-              </div>
+              </Link>
 
               {/* The Burden Of Choice */}
-              <div 
-                onClick={() => setActiveGame('burden')} 
+              <Link
+                to="/games/burden"
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#9B59B6]/40 hover:border-[#9B59B6] rounded-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(155,89,182,0.4)] flex flex-col items-center justify-center min-h-[250px] md:min-h-[300px] md:col-span-2"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#9B59B6]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-[url('/dog.png')] bg-cover bg-[center_top] mix-blend-lighten opacity-10 group-hover:opacity-20 transition-all duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-[url('/dog.webp')] bg-cover bg-[center_top] mix-blend-lighten opacity-10 group-hover:opacity-20 transition-all duration-700 group-hover:scale-105" />
                 
                 <div className="relative z-10 flex flex-col items-center text-center w-full p-8 justify-center h-full bg-gradient-to-t from-black via-black/60 to-transparent">
                   <h3 className="text-3xl md:text-5xl text-[#9B59B6] display-font mb-4 drop-shadow-md tracking-wider group-hover:scale-105 transition-transform">The Burden of Choice</h3>
@@ -140,11 +135,11 @@ const GamesPage: React.FC = () => {
                   </div>
                   <span className="text-white border-[#9B59B6] font-bold tracking-[0.3em] uppercase text-xs border px-8 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">Sort Reality</span>
                 </div>
-              </div>
+              </Link>
 
               {/* Flight of El Homun (Flappy Bird) */}
-              <div 
-                onClick={() => setActiveGame('flappy')} 
+              <Link
+                to="/games/flappy"
                 className="relative overflow-hidden cursor-pointer group bg-black/40 border border-[#E67E22]/40 hover:border-[#E67E22] rounded-xl transition-all duration-500 flex flex-col items-center justify-center min-h-[350px] md:col-span-3 hover:shadow-[0_0_50px_rgba(230,126,34,0.4)]"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#E67E22]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -159,7 +154,7 @@ const GamesPage: React.FC = () => {
                   </div>
                   <span className="text-black bg-[#E67E22] border-black font-bold tracking-[0.3em] uppercase text-xs px-10 py-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 shadow-xl">Take Flight</span>
                 </div>
-              </div>
+              </Link>
 
             </div>
           </div>
@@ -192,12 +187,12 @@ const GamesPage: React.FC = () => {
           </Link>
           <h1 className="display-font text-lg text-[#9B59B6] tracking-wider">Cult Examinations</h1>
           {activeGame !== 'menu' ? (
-            <button 
-              onClick={() => setActiveGame('menu')}
+            <Link
+              to="/games"
               className="text-white/60 hover:text-[#F1C40F] transition-colors text-sm uppercase tracking-widest"
             >
               All Hub
-            </button>
+            </Link>
           ) : (
             <div className="w-20" />
           )}

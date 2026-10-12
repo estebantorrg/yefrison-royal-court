@@ -37,8 +37,6 @@ h1, h2, h3, h4, h5, h6, .display-font {
 /* Easter Egg Themes */
 .theme-bloodmoon .bg-\[\#1F618D\] { background-color: #4A1212 !important; border-color: #8B0000 !important; }
 .theme-bloodmoon .text-\[\#F1C40F\] { color: #E74C3C !important; }
-.theme-bloodmoon .border-amber-300\/50, .theme-bloodmoon .border-amber-300\/80 { border-color: #E74C3C !important; }
-.theme-bloodmoon .bg-\[\#FDF2E9\] { background-color: #0d0202 !important; color: #E74C3C !important; box-shadow: 0 0 15px rgba(231,76,60,0.1) !important; }
 .theme-bloodmoon .text-\[\#D35400\] { color: #ff3333 !important; }
 .theme-bloodmoon .text-\[\#85C1E9\] { color: #E74C3C !important; }
 .theme-bloodmoon * { text-shadow: 0 0 4px rgba(255, 0, 0, 0.4); }
@@ -90,32 +88,13 @@ h1, h2, h3, h4, h5, h6, .display-font {
   animation: fade-in-up 0.3s ease-out both;
 }
 
-/* ─────────────────────────────────────────────
-   Gateway goo helpers — the B.O.B. panel on the
-   gateway renders a pure-CSS blob linking to his
-   external site (benzoate-ostylezene-bicarbonate.pages.dev).
-   ───────────────────────────────────────────── */
+/* Gateway — the B.O.B. logo floats */
 
 @keyframes blob-float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-14px); }
 }
 .blob-float { animation: blob-float 6s ease-in-out infinite; }
-
-/* Slow morphing border-radius so a plain div reads as goo */
-@keyframes blob-morph {
-  0%, 100% { border-radius: 46% 54% 58% 42% / 55% 48% 52% 45%; }
-  33%      { border-radius: 60% 40% 45% 55% / 42% 58% 42% 58%; }
-  66%      { border-radius: 40% 60% 55% 45% / 58% 42% 60% 40%; }
-}
-.blob-morph { animation: blob-morph 9s ease-in-out infinite; }
-
-/* One big lazy eye blink */
-@keyframes bob-blink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  96%           { transform: scaleY(0.08); }
-}
-.bob-blink { animation: bob-blink 6s ease-in-out infinite; transform-origin: center; }
 
 /* Gateway: two doors that lean toward whichever you hover */
 .gateway-panel { transition: flex 0.6s cubic-bezier(0.4,0,0.2,1), filter 0.5s ease; }

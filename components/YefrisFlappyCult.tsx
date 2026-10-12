@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-
-interface LeaderboardEntry {
-  name: string;
-  score: number;
-}
+import { useLeaderboard } from './useLeaderboard';
 
 interface Pipe {
   id: number;
@@ -23,12 +19,12 @@ export const YefrisFlappyCult: React.FC = () => {
   const [pipes, setPipes] = useState<Pipe[]>([]);
   
   // Leaderboard states
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const {
+    leaderboard, refresh: fetchLeaderboard, sessionId: gameSessionId, startSession, submit,
+    isSubmitting: isSubmittingScore, submitted: scoreSubmitted, submitError
+  } = useLeaderboard('flappy');
   const [playerName, setPlayerName] = useState("");
-  const [isSubmittingScore, setIsSubmittingScore] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
 
   // Physics Engine Refs (Mutable for RequestAnimationFrame)
   const engine = useRef({
@@ -59,24 +55,11 @@ export const YefrisFlappyCult: React.FC = () => {
   const PLAYER_HEIGHT = 8;
   const PIPE_WIDTH = 12;
 
-  // Fetch Leaderboard
-  const fetchLeaderboard = async () => {
-    try {
-      const res = await fetch('/api/leaderboard?game=flappy');
-      if (res.ok) {
-        const data = await res.json();
-        setLeaderboard(data);
-      }
-    } catch(e) {
-       console.error("Failed to load leaderboard");
-    }
-  };
-
   useEffect(() => {
     if (!isPlaying || gameOver) {
       fetchLeaderboard();
     }
-  }, [isPlaying, gameOver]);
+  }, [isPlaying, gameOver, fetchLeaderboard]);
 
   // Jump logic updates the synchronous engine state
   const handleJump = useCallback(() => {
@@ -96,10 +79,9 @@ export const YefrisFlappyCult: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleJump]);
 
-  const startGame = async () => {
+  const startGame = () => {
     setIsPlaying(true);
     setGameOver(false);
-    setScoreSubmitted(false);
 
     // Reset Engine State
     engine.current = {
@@ -119,15 +101,8 @@ export const YefrisFlappyCult: React.FC = () => {
     setScore(0);
     setPipes([]);
 
-    try {
-      const res = await fetch('/api/game-session', { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        setGameSessionId(data.sessionId);
-      }
-    } catch (e) {
-      console.warn('Failed to get game session');
-    }
+    // Not awaited: the game must not wait for the network
+    startSession();
     
     // Start loop
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
@@ -222,30 +197,9 @@ export const YefrisFlappyCult: React.FC = () => {
     };
   }, []);
 
-  const submitScore = async (e: React.FormEvent) => {
+  const submitScore = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!playerName.trim() || isSubmittingScore || !gameSessionId) return;
-    
-    setIsSubmittingScore(true);
-    try {
-      const res = await fetch('/api/leaderboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score, sessionId: gameSessionId, game: 'flappy' })
-      });
-      if (res.ok) {
-        setScoreSubmitted(true);
-        fetchLeaderboard();
-      } else {
-        const err = await res.json();
-        alert(`Failed to submit: ${err.error}`);
-      }
-    } catch (e) {
-       console.error(e);
-       alert("Network error.");
-    } finally {
-      setIsSubmittingScore(false);
-    }
+    submit(playerName, score);
   };
 
   return (
@@ -255,20 +209,7 @@ export const YefrisFlappyCult: React.FC = () => {
       className={`w-full max-w-lg mx-auto border border-[#E67E22]/30 rounded-xl bg-black overflow-hidden relative text-white h-[600px] flex flex-col ${isPlaying ? 'cursor-pointer touch-none select-none' : ''}`}
       style={{ touchAction: 'none' }}
     >
-      {/* Background Scroll Parallax */}
       <div className={`absolute inset-0 bg-[#0F0A1A] z-0`} />
-      
-      {/* Clouds / Ruins Parallax Array */}
-      <div className="absolute inset-0 z-0 overflow-hidden opacity-30 pointer-events-none">
-        <div className={`absolute inset-0 bg-[url('/media__1777867305586.png')] bg-cover mix-blend-screen opacity-20 ${isPlaying ? 'animate-parallax-linear' : ''}`} style={{ animationDuration: '30s', width: '200%' }} />
-      </div>
-
-      <style>{`
-        @keyframes parallax-linear {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
 
       {!isPlaying && !gameOver && (
         <div className="absolute inset-x-0 inset-y-0 z-30 flex flex-col items-center justify-center bg-black/60 p-6 text-center backdrop-blur-sm shadow-xl">
@@ -355,7 +296,7 @@ export const YefrisFlappyCult: React.FC = () => {
                 }}
               >
                 {/* Visual texture */}
-                <div className="w-full h-full opacity-20 bg-[url('/dog.png')] bg-cover bg-center mix-blend-overlay" />
+                <div className="w-full h-full opacity-20 bg-[url('/dog.webp')] bg-cover bg-center mix-blend-overlay" />
               </div>
 
               {/* Bottom Pipe */}
@@ -369,7 +310,7 @@ export const YefrisFlappyCult: React.FC = () => {
                 }}
               >
                  {/* Visual texture */}
-                 <div className="w-full h-full opacity-20 bg-[url('/dog.png')] bg-cover bg-center mix-blend-overlay" />
+                 <div className="w-full h-full opacity-20 bg-[url('/dog.webp')] bg-cover bg-center mix-blend-overlay" />
               </div>
             </React.Fragment>
           ))}
@@ -408,6 +349,7 @@ export const YefrisFlappyCult: React.FC = () => {
                 {isSubmittingScore ? 'Charting...' : (gameSessionId ? 'Submit Log' : 'Replay to Submit')}
               </button>
               {!gameSessionId && <p className="text-red-400 text-xs font-bold uppercase">Session Invalid. Please refresh.</p>}
+              {submitError && <p className="text-red-400 text-xs font-bold uppercase">{submitError}</p>}
             </form>
           ) : (
             <p className="text-[#E67E22] mb-8 font-black tracking-widest uppercase bg-white/10 py-3 px-6 rounded-lg border border-[#E67E22]/50">Log Recorded</p>

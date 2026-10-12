@@ -29,7 +29,7 @@ const Gateway: React.FC = () => {
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="relative mb-8">
               <div className="absolute -inset-1 bg-gradient-to-r from-[#F1C40F] via-[#E67E22] to-[#F1C40F] rounded-full blur opacity-60 group-hover:opacity-100 transition duration-700 animate-spin-slow" />
-              <img src="/dog.png" alt="Yefris" className="relative w-40 h-40 md:w-52 md:h-52 rounded-full object-cover border-4 border-white/80 shadow-2xl group-hover:scale-105 transition-transform duration-500" />
+              <img src="/dog.webp" alt="Yefris" className="relative w-40 h-40 md:w-52 md:h-52 rounded-full object-cover border-4 border-white/80 shadow-2xl group-hover:scale-105 transition-transform duration-500" />
             </div>
             <h2 className="display-font text-3xl md:text-5xl text-[#F1C40F] tracking-wider drop-shadow-md">The Cult of Yefris</h2>
             <p className="mt-4 max-w-xs text-sm md:text-base text-white/70 leading-relaxed">
@@ -55,7 +55,7 @@ const Gateway: React.FC = () => {
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="relative mb-8 blob-float">
               <div className="absolute -inset-3 bg-[#6C7AE0] rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition duration-700" />
-              <img src="/BOB_dumbfounded.gif" alt="The Church of B.O.B." className="relative w-40 h-40 md:w-52 md:h-52 rounded-full object-cover border-4 border-white/80 shadow-2xl group-hover:scale-105 transition-transform duration-500" />
+              <img src="/BOB_dumbfounded.webp" alt="The Church of B.O.B." className="relative w-40 h-40 md:w-52 md:h-52 rounded-full object-cover border-4 border-white/80 shadow-2xl group-hover:scale-105 transition-transform duration-500" />
             </div>
             <h2 className="display-font text-3xl md:text-5xl text-[#9AA9FF] tracking-wider drop-shadow-md">The Church of B.O.B.</h2>
             <p className="mt-4 max-w-xs text-sm md:text-base text-white/70 leading-relaxed">

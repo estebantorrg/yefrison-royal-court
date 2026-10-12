@@ -1,5 +1,5 @@
-// Leaderboard API — Now validates server-side game session tokens
-let mockLeaderboard: {name: string, score: number}[] = [];
+// Leaderboard API — validates signed game session tokens
+import { sessionAgeMs } from './game-session.ts';
 
 // ─── In-Memory Rate Limiter ───
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -27,55 +27,45 @@ function cleanupRateLimitMap() {
   }
 }
 
-// Allowlist of known games — prevents arbitrary KV key namespace pollution
-const VALID_GAMES = new Set(["defense", "burden", "flappy"]);
+// Allowlist of known games — prevents arbitrary KV key namespace pollution.
+// The value is the fastest a game can award one point (ms): defense drops a 10-point
+// target every 400ms at most, burden locks 250ms per card, flappy spawns a pillar every 800ms at most.
+const MS_PER_POINT: Record<string, number> = { defense: 40, burden: 250, flappy: 800 };
+const SESSION_MAX_AGE_MS = 3_600_000;
 
-const CORS_HEADERS = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+const reply = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...headers } });
 
-export const onRequestOptions = async () => {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
-};
+const gameIdOf = (game: unknown) => (typeof game === 'string' && Object.hasOwn(MS_PER_POINT, game) ? game : "defense");
+const kvKeyOf = (gameId: string) => (gameId === "defense" ? "top_scores" : `top_scores_${gameId}`);
+
+async function readBoard(kv: any, kvKey: string): Promise<{name: string, score: number}[]> {
+  try {
+    let textData = await kv.get(kvKey, { type: "text" });
+    if (!textData) return [];
+    if (!textData.trim().startsWith('[')) {
+      textData = `[${textData}]`;
+    }
+    const data = JSON.parse(textData);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("KV parsing failed", e);
+    return [];
+  }
+}
 
 export const onRequestGet = async (context: any) => {
   const { request, env } = context;
-  const url = new URL(request.url);
-  const rawGame = url.searchParams.get("game") || "defense";
-  const gameId = VALID_GAMES.has(rawGame) ? rawGame : "defense";
-  const kvKey = gameId === "defense" ? "top_scores" : `top_scores_${gameId}`;
+
+  if (!env.LEADERBOARD_KV) {
+    return reply({ error: "Leaderboard is not configured" }, 500);
+  }
 
   try {
-    let topScores: {name: string, score: number}[] = [];
-
-    if (env.LEADERBOARD_KV) {
-      try {
-        let textData = await env.LEADERBOARD_KV.get(kvKey, { type: "text" });
-        if (textData) {
-          if (!textData.trim().startsWith('[')) {
-            textData = `[${textData}]`;
-          }
-          const data = JSON.parse(textData);
-          topScores = Array.isArray(data) ? data : [];
-        }
-      } catch (e) {
-        console.error("KV parsing failed on GET", e);
-        topScores = [];
-      }
-    } else {
-      topScores = mockLeaderboard;
-    }
-
-    return new Response(JSON.stringify(topScores), {
-      status: 200,
-      headers: CORS_HEADERS,
-    });
-
+    const gameId = gameIdOf(new URL(request.url).searchParams.get("game"));
+    return reply(await readBoard(env.LEADERBOARD_KV, kvKeyOf(gameId)));
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to fetch leaderboard" }), { status: 500, headers: CORS_HEADERS });
+    return reply({ error: "Failed to fetch leaderboard" }, 500);
   }
 };
 
@@ -87,87 +77,54 @@ export const onRequestPost = async (context: any) => {
     cleanupRateLimitMap();
     const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
     if (isRateLimited(clientIp)) {
-      return new Response(JSON.stringify({ error: "Too many submissions. Try again later." }), {
-        status: 429,
-        headers: { ...CORS_HEADERS, "Retry-After": "60" },
-      });
+      return reply({ error: "Too many submissions. Try again later." }, 429, { "Retry-After": "60" });
+    }
+
+    if (!env.LEADERBOARD_KV || !env.SESSION_SECRET) {
+      console.error("LEADERBOARD_KV or SESSION_SECRET is not set");
+      return reply({ error: "Leaderboard is not configured" }, 500);
     }
 
     let body;
     try {
       body = await request.json();
     } catch (e) {
-      return new Response(JSON.stringify({ error: "Invalid JSON format" }), { status: 400, headers: CORS_HEADERS });
+      return reply({ error: "Invalid JSON format" }, 400);
     }
 
-    const { name, score, sessionId, game } = body;
-    const gameId = VALID_GAMES.has(game) ? game : "defense";
-    const kvKey = gameId === "defense" ? "top_scores" : `top_scores_${gameId}`;
+    const { name, score, sessionId, game } = body ?? {};
+    const gameId = gameIdOf(game);
+    const kvKey = kvKeyOf(gameId);
 
     // ─── Input Validation ───
     if (!name || typeof name !== 'string' || name.length > 20) {
-      return new Response(JSON.stringify({ error: "Invalid name" }), { status: 400, headers: CORS_HEADERS });
+      return reply({ error: "Invalid name" }, 400);
     }
-    if (typeof score !== 'number' || score < 0 || score > 50000) {
-      return new Response(JSON.stringify({ error: "Invalid or impossible score" }), { status: 400, headers: CORS_HEADERS });
+    if (!Number.isInteger(score) || score < 0 || score > 50000) {
+      return reply({ error: "Invalid or impossible score" }, 400);
     }
 
     // ─── Server-Side Session Validation ───
     if (!sessionId || typeof sessionId !== 'string') {
-      return new Response(JSON.stringify({ error: "Missing game session" }), { status: 403, headers: CORS_HEADERS });
+      return reply({ error: "Missing game session" }, 403);
     }
 
-    if (env.LEADERBOARD_KV) {
-      const sessionKey = `session:${sessionId}`;
-      const sessionRaw = await env.LEADERBOARD_KV.get(sessionKey, { type: "text" });
-
-      if (!sessionRaw) {
-        return new Response(JSON.stringify({ error: "Invalid or expired game session" }), { status: 403, headers: CORS_HEADERS });
-      }
-
-      let sessionData;
-      try {
-        sessionData = JSON.parse(sessionRaw);
-      } catch {
-        return new Response(JSON.stringify({ error: "Corrupted session data" }), { status: 403, headers: CORS_HEADERS });
-      }
-
-      if (sessionData.used) {
-        return new Response(JSON.stringify({ error: "Session already used" }), { status: 403, headers: CORS_HEADERS });
-      }
-
-      // Check session age (max 10 minutes — belt + suspenders with KV TTL)
-      if (Date.now() - sessionData.createdAt > 600_000) {
-        await env.LEADERBOARD_KV.delete(sessionKey);
-        return new Response(JSON.stringify({ error: "Session expired" }), { status: 403, headers: CORS_HEADERS });
-      }
-
-      // Mark session as used (one-time submission)
-      sessionData.used = true;
-      await env.LEADERBOARD_KV.put(sessionKey, JSON.stringify(sessionData), { expirationTtl: 60 }); // Keep briefly for debugging, then auto-expire
+    const sessionAge = await sessionAgeMs(env.SESSION_SECRET, sessionId);
+    if (sessionAge === null || sessionAge < 0) {
+      return reply({ error: "Invalid game session" }, 403);
+    }
+    if (sessionAge > SESSION_MAX_AGE_MS) {
+      return reply({ error: "Game session expired. Play again to submit." }, 403);
+    }
+    // A score cannot be higher than the time played allows.
+    if (score > sessionAge / MS_PER_POINT[gameId]) {
+      return reply({ error: "Invalid or impossible score" }, 400);
     }
 
     // ─── Leaderboard Update ───
+    // shortcut: KV has no locks, so two submissions in the same moment can overwrite each other; move to D1 or a Durable Object if traffic grows.
     const newEntry = { name: name.trim() || 'Anonymous', score };
-    let currentLeaderboard: {name: string, score: number}[] = [];
-
-    if (env.LEADERBOARD_KV) {
-      try {
-        let textData = await env.LEADERBOARD_KV.get(kvKey, { type: "text" });
-        if (textData) {
-          if (!textData.trim().startsWith('[')) {
-            textData = `[${textData}]`;
-          }
-          const parsedData = JSON.parse(textData);
-          currentLeaderboard = Array.isArray(parsedData) ? parsedData : [];
-        }
-      } catch (e) {
-        console.error("KV parsing failed on POST", e);
-        currentLeaderboard = [];
-      }
-    } else {
-      currentLeaderboard = [...mockLeaderboard];
-    }
+    let currentLeaderboard = await readBoard(env.LEADERBOARD_KV, kvKey);
 
     // Insert or update (keep highest)
     const existingIndex = currentLeaderboard.findIndex(e => e.name.toLowerCase() === newEntry.name.toLowerCase());
@@ -182,18 +139,11 @@ export const onRequestPost = async (context: any) => {
     currentLeaderboard.sort((a, b) => b.score - a.score);
     currentLeaderboard = currentLeaderboard.slice(0, 10);
 
-    if (env.LEADERBOARD_KV) {
-      await env.LEADERBOARD_KV.put(kvKey, JSON.stringify(currentLeaderboard));
-    } else {
-      mockLeaderboard = currentLeaderboard;
-    }
+    await env.LEADERBOARD_KV.put(kvKey, JSON.stringify(currentLeaderboard));
 
-    return new Response(JSON.stringify({ success: true, leaderboard: currentLeaderboard }), {
-      status: 200,
-      headers: CORS_HEADERS,
-    });
+    return reply({ success: true, leaderboard: currentLeaderboard });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to process score" }), { status: 500, headers: CORS_HEADERS });
+    return reply({ error: "Failed to process score" }, 500);
   }
 };

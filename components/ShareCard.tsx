@@ -1,5 +1,6 @@
-import React, { useRef, useCallback } from 'react';
-import { toPng } from 'html-to-image';
+import React, { useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { useCardImage } from './useCardImage';
 
 interface ShareCardProps {
   question: string;
@@ -9,67 +10,11 @@ interface ShareCardProps {
 
 export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isGenerating, setIsGenerating] = React.useState(false);
-  const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
-  const [isCopied, setIsCopied] = React.useState(false);
-
-  const generateImage = useCallback(async () => {
-    if (!cardRef.current) return;
-    setIsGenerating(true);
-
-    try {
-      // Small pause to let fonts and responsive elements finish layout calculations
-      await new Promise(r => setTimeout(r, 150));
-      const elHeight = cardRef.current.offsetHeight;
-      // Prevent massive canvas height on iOS/older devices by scaling pixel ratio down if response is gigantic
-      const calculatedPixelRatio = elHeight > 2000 ? 1 : 2; 
-
-      const dataUrl = await toPng(cardRef.current, {
-        cacheBust: true,
-        pixelRatio: calculatedPixelRatio,
-        style: {
-           margin: '0', 
-        }
-      });
-
-      setGeneratedImage(dataUrl);
-    } catch (err) {
-      console.error('Failed to generate share card:', err);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, []);
+  const { isGenerating, generatedImage, isCopied, generateImage, download, copyToClipboard } = useCardImage(cardRef);
 
   React.useEffect(() => {
     generateImage();
   }, [generateImage]);
-
-  const handleDownload = () => {
-    if (!generatedImage) return;
-    const link = document.createElement('a');
-    link.download = `yefris-oracle-${Date.now()}.png`;
-    link.href = generatedImage;
-    link.click();
-  };
-
-  const handleCopyToClipboard = async () => {
-    if (!generatedImage) return;
-    try {
-      const response = await fetch(generatedImage);
-      const blob = await response.blob();
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-      // Brief visual feedback
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 1500);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  // Ensure we format the text nicely and allow it to be full length
-
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
@@ -154,9 +99,8 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
               fontWeight: '400',
               marginBottom: '32px',
               letterSpacing: '0.01em',
-              whiteSpace: 'pre-wrap', // Preserve formatting for long answers
-            }}>
-              {answer}
+            }} className="oracle-markdown">
+              <ReactMarkdown>{answer}</ReactMarkdown>
             </div>
 
             {/* Footer */}
@@ -189,7 +133,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
         {/* Action buttons */}
         <div className="flex gap-3">
           <button
-            onClick={handleDownload}
+            onClick={() => download(`yefris-oracle-${Date.now()}.png`)}
             disabled={!generatedImage || isGenerating}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#E67E22] hover:bg-[#D35400] text-white font-bold rounded-lg shadow-lg transition-all duration-200 disabled:opacity-40 text-sm uppercase tracking-wider"
           >
@@ -200,7 +144,7 @@ export const ShareCard: React.FC<ShareCardProps> = ({ question, answer, onClose 
           </button>
           <button
             id="copy-btn"
-            onClick={handleCopyToClipboard}
+            onClick={copyToClipboard}
             disabled={!generatedImage || isGenerating}
             className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg shadow-lg transition-all duration-200 disabled:opacity-40 text-sm uppercase tracking-wider border border-white/20"
           >

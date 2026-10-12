@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLeaderboard } from './useLeaderboard';
 
 type GameMode = 'survival';
-
-interface LeaderboardEntry {
-  name: string;
-  score: number;
-}
 
 const WORD_BANK = [
   // Oblivion (Correct Swipe Right)
@@ -51,12 +47,12 @@ export const TheBurdenOfChoice: React.FC = () => {
   const isAnimating = useRef(false);
 
   // Leaderboard states
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const {
+    leaderboard, refresh: fetchLeaderboard, sessionId: gameSessionId, startSession, submit,
+    isSubmitting: isSubmittingScore, submitted: scoreSubmitted, submitError
+  } = useLeaderboard('burden');
   const [playerName, setPlayerName] = useState("");
-  const [isSubmittingScore, setIsSubmittingScore] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
   const [gameOverReason, setGameOverReason] = useState<'timeout' | 'wrong' | null>(null);
 
   // Focus ref so card catches keyboard automatically if we want, but window listener is fine
@@ -75,24 +71,11 @@ export const TheBurdenOfChoice: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, gameOver, currentWord]);
 
-  // Fetch Leaderboard
-  const fetchLeaderboard = async () => {
-    try {
-      const res = await fetch('/api/leaderboard?game=burden');
-      if (res.ok) {
-        const data = await res.json();
-        setLeaderboard(data);
-      }
-    } catch (e) {
-      console.error("Failed to load leaderboard");
-    }
-  };
-
   useEffect(() => {
     if (!isPlaying || gameOver) {
       fetchLeaderboard();
     }
-  }, [isPlaying, gameOver]);
+  }, [isPlaying, gameOver, fetchLeaderboard]);
 
   // Game Loop (Timer)
   useEffect(() => {
@@ -100,6 +83,8 @@ export const TheBurdenOfChoice: React.FC = () => {
 
     const interval = setInterval(() => {
       setTimeLeft(prev => {
+        // The clock stops while an answer is being judged (swipe animation)
+        if (isAnimating.current) return prev;
         if (prev <= 50) {
           clearInterval(interval);
           setGameOverReason('timeout');
@@ -114,25 +99,15 @@ export const TheBurdenOfChoice: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying, gameOver, currentWord]);
 
-  const startGame = async () => {
+  const startGame = () => {
     setScore(0);
     setGameOver(false);
     setGameOverReason(null);
     setIsPlaying(true);
-    setScoreSubmitted(false);
     setSwipeAnim(null);
     setDragPos({ x: 0, y: 0 });
     pickNextWord(0);
-
-    try {
-      const res = await fetch('/api/game-session', { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        setGameSessionId(data.sessionId);
-      }
-    } catch (e) {
-      console.warn('Failed to get game session');
-    }
+    startSession();
   };
 
   const pickNextWord = (currentScore: number) => {
@@ -210,30 +185,9 @@ export const TheBurdenOfChoice: React.FC = () => {
     }
   };
 
-  const submitScore = async (e: React.FormEvent) => {
+  const submitScore = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!playerName.trim() || isSubmittingScore || !gameSessionId) return;
-
-    setIsSubmittingScore(true);
-    try {
-      const res = await fetch('/api/leaderboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score, sessionId: gameSessionId, game: 'burden' })
-      });
-      if (res.ok) {
-        setScoreSubmitted(true);
-        fetchLeaderboard();
-      } else {
-        const err = await res.json();
-        alert(`Failed to submit: ${err.error}`);
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Network error.");
-    } finally {
-      setIsSubmittingScore(false);
-    }
+    submit(playerName, score);
   };
 
   // Calculate dynamic rotation and opacity based on physical drag position
@@ -423,6 +377,7 @@ export const TheBurdenOfChoice: React.FC = () => {
                 {isSubmittingScore ? 'Synchronizing...' : (gameSessionId ? 'Archive Devotion' : 'Replay to Submit')}
               </button>
               {!gameSessionId && <p className="text-red-400 text-xs font-bold uppercase">Game session invalidated. Refresh to compete.</p>}
+              {submitError && <p className="text-red-400 text-xs font-bold uppercase">{submitError}</p>}
             </form>
           ) : (
             <p className="text-[#F1C40F] mb-8- font-black tracking-widest uppercase bg-white/10 py-3 px-6 rounded-lg border border-[#F1C40F]/50">Archived Perfectly</p>

@@ -19,7 +19,7 @@ const NotFound: React.FC = () => {
       <div className="relative z-10 flex flex-col items-center">
         <div className="relative mb-8">
           <div className="absolute -inset-2 bg-gradient-to-r from-[#F1C40F] via-[#E67E22] to-[#F1C40F] rounded-full blur opacity-40 animate-spin-slow" />
-          <img src="/dog.png" alt="A lost Yefris" className="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/80 shadow-2xl grayscale opacity-80" />
+          <img src="/dog.webp" alt="A lost Yefris" className="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/80 shadow-2xl grayscale opacity-80" />
         </div>
 
         <h1 className="display-font text-7xl md:text-9xl tracking-[0.15em] text-[#F1C40F] drop-shadow-lg">404</h1>

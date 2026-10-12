@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 // @ts-ignore
 import ricardoImg from './ricardo_obregon.jpg';
+import { useLeaderboard } from './useLeaderboard';
 
 type GameMode = 'survival' | 'endless';
 
@@ -16,13 +17,6 @@ interface Laser {
   y: number;
 }
 
-interface LeaderboardEntry {
-  name: string;
-  score: number;
-}
-
-
-
 export const YefrisLaserDefense: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -36,34 +30,24 @@ export const YefrisLaserDefense: React.FC = () => {
   const [lasers, setLasers] = useState<Laser[]>([]);
 
   // Leaderboard states
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const {
+    leaderboard, refresh: fetchLeaderboard, startSession, submit,
+    isSubmitting: isSubmittingScore, submitted: scoreSubmitted, submitError
+  } = useLeaderboard('defense');
   const [playerName, setPlayerName] = useState("");
-  const [isSubmittingScore, setIsSubmittingScore] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const targetIdCounter = useRef(0);
-
-  // Fetch Leaderboard
-  const fetchLeaderboard = async () => {
-    try {
-      const res = await fetch('/api/leaderboard?game=defense');
-      if (res.ok) {
-        const data = await res.json();
-        setLeaderboard(data);
-      }
-    } catch(e) {
-       console.error("Failed to load leaderboard");
-    }
-  };
+  // The spawn loop reads the score from here, so a kill does not restart its timer
+  const scoreRef = useRef(score);
+  scoreRef.current = score;
 
   useEffect(() => {
     if (!isPlaying || gameOver) {
       fetchLeaderboard();
     }
-  }, [isPlaying, gameOver]);
+  }, [isPlaying, gameOver, fetchLeaderboard]);
 
   // Handle Resume Countdown Loop
   useEffect(() => {
@@ -84,22 +68,25 @@ export const YefrisLaserDefense: React.FC = () => {
 
     // Moderate Difficulty Scaling
     // Base spawns at 1.5s. Every 10 points it gets 5% faster (was 15%), capping locally at 400ms.
-    const spawnRate = Math.max(400, 1500 * Math.pow(0.95, score / 10)); 
-    
-    const interval = setInterval(() => {
+    const spawnRate = () => Math.max(400, 1500 * Math.pow(0.95, scoreRef.current / 10));
+    let timer: NodeJS.Timeout;
+
+    const spawn = () => {
       const newTarget: Target = {
         id: `target-${targetIdCounter.current++}`,
         left: 10 + Math.random() * 80,
         // Base drops in 4s. Every 10 points it falls 5% faster, capping cleanly at 1.2s.
-        duration: Math.max(1.2, 4 * Math.pow(0.95, score / 10)), 
+        duration: Math.max(1.2, 4 * Math.pow(0.95, scoreRef.current / 10)), 
       };
       setTargets(prev => [...prev, newTarget]);
-    }, spawnRate);
+      timer = setTimeout(spawn, spawnRate());
+    };
+    timer = setTimeout(spawn, spawnRate());
 
-    return () => clearInterval(interval);
-  }, [isPlaying, gameOver, isPaused, resumeCountdown, score]);
+    return () => clearTimeout(timer);
+  }, [isPlaying, gameOver, isPaused, resumeCountdown]);
 
-  const startGame = async (selectedMode: GameMode) => {
+  const startGame = (selectedMode: GameMode) => {
     setMode(selectedMode);
     setScore(0);
     setLives(3);
@@ -109,19 +96,10 @@ export const YefrisLaserDefense: React.FC = () => {
     setIsPlaying(true);
     setIsPaused(false);
     setResumeCountdown(null);
-    setScoreSubmitted(false);
     targetIdCounter.current = 0;
 
     // Request server-side game session token
-    try {
-      const res = await fetch('/api/game-session', { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        setGameSessionId(data.sessionId);
-      }
-    } catch (e) {
-      console.warn('Failed to get game session, submission may fail');
-    }
+    startSession();
   };
 
   const endGame = () => {
@@ -140,30 +118,9 @@ export const YefrisLaserDefense: React.FC = () => {
     setIsPaused(true);
   }
 
-  const submitScore = async (e: React.FormEvent) => {
+  const submitScore = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!playerName.trim() || isSubmittingScore) return;
-    
-    setIsSubmittingScore(true);
-    try {
-      const res = await fetch('/api/leaderboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score, sessionId: gameSessionId, game: 'defense' })
-      });
-      if (res.ok) {
-        setScoreSubmitted(true);
-        setGameSessionId(null);
-        fetchLeaderboard();
-      } else {
-        const errBody = await res.text();
-        console.error(`Leaderboard submit failed: ${res.status}`, errBody);
-      }
-    } catch(e) {
-      console.error('Leaderboard submit exception:', e);
-    } finally {
-      setIsSubmittingScore(false);
-    }
+    submit(playerName, score);
   };
 
   const handleTargetMiss = useCallback((id: string) => {
@@ -312,6 +269,7 @@ export const YefrisLaserDefense: React.FC = () => {
                           Submit
                         </button>
                       </div>
+                      {submitError && <p className="text-red-400 text-xs font-bold uppercase mt-3">{submitError}</p>}
                     </form>
                   )}
                   {scoreSubmitted && (
@@ -463,7 +421,7 @@ export const YefrisLaserDefense: React.FC = () => {
               <div className="absolute inset-0 bg-[#E74C3C] blur-3xl rounded-full opacity-20 animate-pulse" />
             )}
             <img 
-              src="/yefris_laser.png" 
+              src="/yefris_laser.webp" 
               alt="Yefris Guardian" 
               className={`w-40 h-auto drop-shadow-[0_0_15px_rgba(231,76,60,0.5)] transition-transform duration-100 ${lasers.length > 0 ? 'scale-110 brightness-150' : ''}`}
             />
